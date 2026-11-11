@@ -38,20 +38,21 @@ Open http://127.0.0.1:8000/demo and ask a question twice. The third time, you're
 
 ## How the live demo protects your money
 
-Every demo question costs you about 25 US cents (about 20p). When `DEMO_MODE=1`:
+Every demo question costs you roughly 25 US cents (about 20p), which is an estimate. When `DEMO_MODE=1`:
 
-- **Each visitor** can ask 2 questions a day.
+- **Each visitor** can ask 2 questions a day (`SCOUT_PER_VISITOR_LIMIT`). Visitors are told apart by internet address. Every address in a home's IPv6 block counts as one visitor.
 - **Everyone together** can ask `SCOUT_DAILY_LIMIT` questions a day. This is the real budget control.
 - **Only one question runs at a time.** Anyone else is asked to try again in a minute, and that doesn't use up their question.
 - **Questions must be 10 to 300 characters.**
 - **Scout works with less effort:** 3 researchers, 3 web searches each, and no rewrite after the fact-check.
-- **A question that runs over 3 minutes is stopped.**
+- **The researchers stop after 90 seconds.** If a question has taken over 3 minutes by the time its report is written, the final fact-check is skipped. A slow reply from Claude is retried once at most.
+- **Visitors need cookies switched on.** A visitor whose browser blocks them is told so before their question counts.
 - **The limits reset at midnight UTC.**
-- **Scout refuses to start** if `SCOUT_IP_SALT` is missing or a limit is mistyped, so a typo never means "no limit".
+- **Scout refuses to start** if `SCOUT_IP_SALT` or `SCOUT_DB` is missing, or if `DEMO_MODE` or a limit is mistyped, so a typo never means "no limit".
 
 Visitors are told about the limits in plain words. When a limit is reached, the page offers the example reports instead.
 
-**Privacy:** visitors are counted by a one-way code made from their internet address and the date, which can't be turned back into the address. Raw addresses are never stored. Each visitor sees only their own questions. Everything is deleted after 30 days. The details are at `/privacy`.
+**Privacy:** visitors are counted by a one-way code made from their internet address, the date and the secret salt. The code is wiped once its day is over, and raw addresses are never stored. Each visitor sees only their own questions. Questions and reports are deleted after 30 days. The details are at `/privacy`.
 
 ## Make the example reports (about 75 US cents, once)
 
@@ -63,7 +64,7 @@ This researches the three website questions with the real API and the demo's set
 
 ## Deploying the demo on Railway
 
-1. **Make a separate API key for the demo.** In the Claude Console, create a workspace just for the demo (for example "Scout demo"), set a **monthly spend limit** on it of about $30, and create an API key in that workspace. Then a busy day, a bug or a leaked key can never cost more than that, and you can revoke the demo key without breaking your own work.
+1. **Make a separate API key for the demo.** In the Claude Console, create a workspace just for the demo (for example "Scout demo"), set a **monthly spend limit** on it of $25, which is about £20, and create an API key in that workspace. Then a busy day, a bug or a leaked key can never cost more than that, and you can revoke the demo key without breaking your own work.
 2. **Create the service.** In Railway, start a new project from this GitHub repository. Railway reads the `Procfile` to start Scout.
 3. **Add a volume** to the service (right-click the service → Attach volume), mounted at `/data`. This keeps the database when Railway redeploys.
 4. **Set the variables** in the service's Variables tab:
@@ -73,10 +74,10 @@ This researches the three website questions with the real API and the demo's set
    | `ANTHROPIC_API_KEY` | The demo key from step 1 |
    | `DEMO_MODE` | `1` |
    | `SCOUT_DAILY_LIMIT` | `2`. That's about £17 a month at worst, inside a £20 budget. |
-   | `SCOUT_PER_VISITOR_LIMIT` | `2` (the default). With a daily limit of 2, setting this to `1` lets two different people try it each day. |
+   | `SCOUT_PER_VISITOR_LIMIT` | `1` is recommended at this budget, so two different people can try it each day. The default is `2`, which would let the first visitor use the whole day's questions. |
    | `SCOUT_MAX_CONCURRENT` | `1` |
    | `SCOUT_IP_SALT` | A long random string. Make one with the command below this table. |
-   | `SCOUT_DB` | `/data/scout.db` |
+   | `SCOUT_DB` | `/data/scout.db`. This is required: without it, the daily counts would start again every time Scout restarts. |
 
    To make the salt, run this and paste the result into Railway:
    ```bash
@@ -87,7 +88,7 @@ This researches the three website questions with the real API and the demo's set
 5. **Keep it to one replica** (Settings → Deploy). The limits are counted in one process and one database file, so a second copy would double them.
 6. **Get a web address** (Settings → Networking → Generate Domain).
 
-**Worst-case cost** is about `SCOUT_DAILY_LIMIT` × 35 US cents a day. Check the real figure in the Claude Console after the first few days.
+**Worst-case cost** is roughly `SCOUT_DAILY_LIMIT` × 35 US cents a day. That is an estimate, so check the real figure in the Claude Console after the first few days. The Console spend limit from step 1 is the only hard ceiling, so keep it at or below your budget.
 
 ### Before you go live
 

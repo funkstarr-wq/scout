@@ -134,7 +134,15 @@
   async function follow(id) {
     clearInterval(timer);
     const tick = async () => {
-      const job = await api(`/api/research/${id}`);
+      let job;
+      try {
+        job = await api(`/api/research/${id}`);
+      } catch (err) {  // e.g. a link to someone else's question: say so instead of freezing
+        clearInterval(timer);
+        $("report").innerHTML = `<p class="error">${err.message.replace(/</g, "&lt;")}</p>`;
+        $("go").disabled = false;
+        return;
+      }
       show(job);
       if (job.status !== "running") {
         clearInterval(timer);

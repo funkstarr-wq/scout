@@ -8,6 +8,8 @@ Pages:
 """
 import hashlib
 import hmac
+import ipaddress
+import logging
 import re
 import secrets
 import threading
@@ -17,7 +19,7 @@ from pathlib import Path
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from . import config, examples, store
 from .graph import run_research
@@ -28,12 +30,20 @@ config.check_settings()
 STATIC = Path(__file__).resolve().parent / "static"
 SITE = STATIC / "site"
 VISITOR_COOKIE = "scout_visitor"
+log = logging.getLogger("scout")
+
+
+def tidy_demo_data() -> None:
+    """Delete demo questions after KEEP_DEMO_DAYS, and visitor fingerprints after their day."""
+    store.delete_old_jobs(config.KEEP_DEMO_DAYS)
+    store.forget_old_fingerprints()
 
 
 @asynccontextmanager
 async def lifespan(_app):
     if config.DEMO_MODE:
-        store.delete_old_jobs(config.KEEP_DEMO_DAYS)
+        tidy_demo_data()
+        store.fail_unfinished_jobs("Scout restarted before this question finished. Please try again.")
     yield
 
 
@@ -57,7 +67,7 @@ def require_password(credentials: HTTPBasicCredentials | None = Depends(basic)):
 
 
 class Question(BaseModel):
-    question: str
+    question: str = Field(max_length=5000)  # refuse absurdly long requests before doing anything
 
 
 # ------------------------------------------------------------ live demo helpers
@@ -97,22 +107,44 @@ def visitor_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+def visitor_network(ip: str) -> str:
+    """The part of an address that identifies one household or phone.
+
+    A home on IPv6 gets a whole block of addresses (a /64) and can hop between
+    them, so the whole block counts as one visitor.
+    """
+    try:
+        address = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip
+    if address.version == 6:
+        if address.ipv4_mapped is not None:  # an IPv4 address written the IPv6 way
+            return str(address.ipv4_mapped)
+        return str(ipaddress.ip_network(f"{address}/64", strict=False))
+    return str(address)
+
+
 def ip_fingerprint(ip: str, day: str) -> str:
     """A one-way code made from the address, today's date and a secret salt.
 
     It can tell whether two questions came from the same address on the same
-    day, but it can't be turned back into the address, and because the date is
-    mixed in, one day's codes can't be matched with the next day's.
-    The address itself is never stored or logged.
+    day. Only someone with the salt could work out which address made it, and
+    because the date is mixed in, one day's codes can't be matched with the
+    next day's. Fingerprints are wiped once their day is over, and the address
+    itself is never stored or logged.
     """
     return hmac.new(config.IP_SALT.encode(), f"{ip}|{day}".encode(), hashlib.sha256).hexdigest()
 
 
+def cookie_visitor_id(request: Request) -> str | None:
+    """The visitor's ID from their cookie, if they have a valid one."""
+    vid = request.cookies.get(VISITOR_COOKIE, "")
+    return vid if re.fullmatch(r"[A-Za-z0-9_-]{16,64}", vid) else None
+
+
 def visitor_id(request: Request, response: Response) -> str:
     """A random ID kept in a cookie, so each visitor sees only their own questions."""
-    vid = request.cookies.get(VISITOR_COOKIE, "")
-    if not re.fullmatch(r"[A-Za-z0-9_-]{16,64}", vid):
-        vid = secrets.token_urlsafe(18)
+    vid = cookie_visitor_id(request) or secrets.token_urlsafe(18)
     https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     response.set_cookie(
         VISITOR_COOKIE, vid, max_age=config.KEEP_DEMO_DAYS * 86400,
@@ -131,6 +163,8 @@ REFUSALS = {
                    "Meanwhile, here are three finished reports."),
     "busy": (503, "Scout is busy with someone else's question. Please try again in a minute."),
 }
+NO_COOKIE = ("Scout needs a cookie to show you your report. Please allow cookies for this site, "
+             "reload the page and try again.")
 
 
 def refusal(reason: str) -> HTTPException:
@@ -158,7 +192,11 @@ def run_job(job_id: str, question: str, holds_slot: bool = False) -> None:
         store.fail_job(job_id, "Scout ran out of time on this question, so it stopped to keep costs down. "
                                "A narrower question usually works better.")
     except Exception as exc:  # show the error on the page rather than failing silently
-        store.fail_job(job_id, f"{type(exc).__name__}: {exc}")
+        log.exception("Research job %s failed", job_id)
+        if config.DEMO_MODE:  # strangers don't need to see the details of an API error
+            store.fail_job(job_id, "Something went wrong while Scout was researching this. Please try again later.")
+        else:
+            store.fail_job(job_id, f"{type(exc).__name__}: {exc}")
     finally:
         if holds_slot:
             slots.give_back()
@@ -229,7 +267,7 @@ def example_data(name: str):
 
 
 @app.post("/api/research", dependencies=[Depends(require_password)])
-def start_research(body: Question, background: BackgroundTasks, request: Request, response: Response):
+def start_research(body: Question, background: BackgroundTasks, request: Request):
     question = body.question.strip()
     longest = max_question_chars()
     if not config.QUESTION_MIN_CHARS <= len(question) <= longest:
@@ -242,14 +280,19 @@ def start_research(body: Question, background: BackgroundTasks, request: Request
         background.add_task(run_job, job_id, question)
         return {"id": job_id}
 
-    store.delete_old_jobs(config.KEEP_DEMO_DAYS)
+    # The page gets its cookie when it loads. Without one, the visitor could never see their
+    # report, so refuse before the question counts or costs anything.
+    vid = cookie_visitor_id(request)
+    if vid is None:
+        raise HTTPException(400, NO_COOKIE)
+    tidy_demo_data()
     got_slot = slots.try_take()
     try:
         job_id, reason = store.try_create_job(
             question,
             config.DAILY_LIMIT,
-            visitor_id=visitor_id(request, response),
-            ip_hash=ip_fingerprint(visitor_ip(request), store.today()),
+            visitor_id=vid,
+            ip_hash=ip_fingerprint(visitor_network(visitor_ip(request)), store.today()),
             per_visitor_limit=config.PER_VISITOR_LIMIT,
             can_start=got_slot,
         )
@@ -268,7 +311,8 @@ def start_research(body: Question, background: BackgroundTasks, request: Request
 @app.get("/api/research/{job_id}", dependencies=[Depends(require_password)])
 def get_research(job_id: str, request: Request):
     job = store.get_job(job_id)
-    if job is None or (config.DEMO_MODE and job["visitor_id"] != request.cookies.get(VISITOR_COOKIE)):
+    if job is None or (config.DEMO_MODE and (job["visitor_id"] is None
+                                             or job["visitor_id"] != cookie_visitor_id(request))):
         raise HTTPException(404, "No such research job.")
     return public(job)
 
@@ -276,6 +320,6 @@ def get_research(job_id: str, request: Request):
 @app.get("/api/history", dependencies=[Depends(require_password)])
 def history(request: Request):
     if config.DEMO_MODE:
-        mine = request.cookies.get(VISITOR_COOKIE)
+        mine = cookie_visitor_id(request)
         return store.list_jobs(visitor_id=mine) if mine else []
     return store.list_jobs()

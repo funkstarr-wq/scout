@@ -159,3 +159,15 @@ def delete_old_jobs(days: int) -> int:
     with _connect() as conn:
         deleted = conn.execute("DELETE FROM jobs WHERE created_at < ?", (cutoff,)).rowcount
     return deleted
+
+
+def forget_old_fingerprints() -> None:
+    """Wipe visitor fingerprints from earlier days. Only today's are needed, to count today's questions."""
+    with _connect() as conn:
+        conn.execute("UPDATE jobs SET ip_hash = NULL WHERE ip_hash IS NOT NULL AND created_at < ?", (today(),))
+
+
+def fail_unfinished_jobs(message: str) -> None:
+    """Mark questions that were still running when Scout stopped, so their pages stop waiting."""
+    with _connect() as conn:
+        conn.execute("UPDATE jobs SET status = 'failed', error = ? WHERE status = 'running'", (message,))

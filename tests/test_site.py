@@ -41,11 +41,13 @@ def test_website_is_at_the_front_door():
     assert client.get("/og-image.jpg").status_code == 200
 
 
-def test_scout_page_has_moved_to_demo():
+def test_scout_page_has_moved_to_demo_and_carries_the_banner():
     page = client.get("/demo")
     assert page.status_code == 200
     assert "Research it" in page.text
+    # The banner is part of the page; the page shows it when /api/settings says the demo is on.
     assert "Live demo. Limited questions per day. Questions are stored." in page.text
+    assert client.get("/api/settings").json()["demo"] is False
 
 
 def test_privacy_note():
@@ -114,4 +116,16 @@ def test_make_examples_saves_a_report_with_its_progress_log(tmp_path):
     assert saved["question"] == examples.EXAMPLES["coffee-and-sleep"]
     assert "## Sources" in saved["report"]
     assert saved["progress"][0].startswith("Planned")
-    assert saved["settings"]["max_subtasks"] == config.MAX_SUBTASKS
+    assert set(saved["settings"]) >= {"lead_model", "worker_model", "max_subtasks", "max_revisions"}
+
+
+def test_make_examples_uses_the_demo_settings_and_asks_before_spending():
+    import os
+    import subprocess
+    import sys
+
+    env = {**os.environ, "DEMO_MODE": "0", "SCOUT_FAKE": "0"}  # the script must switch the demo on itself
+    result = subprocess.run([sys.executable, "scripts/make_examples.py"], cwd=ROOT, env=env,
+                            input="no\n", capture_output=True, text=True)
+    assert "up to 3 researchers, 3 searches each, no rewrite" in result.stdout
+    assert "Nothing was spent" in result.stdout

@@ -82,7 +82,9 @@ def main(argv: list[str] | None = None) -> int:
         print("SCOUT_FAKE is on, so these would be made-up reports. Turn it off and run this again.")
         return 2
 
-    print(f"This researches {len(names)} question(s) with the real Claude API, using the live demo's settings.")
+    print(f"This researches {len(names)} question(s) with the real Claude API, using the live demo's settings:")
+    rewrites = "no rewrite" if config.MAX_REVISIONS == 0 else f"up to {config.MAX_REVISIONS} rewrite(s)"
+    print(f"up to {config.MAX_SUBTASKS} researchers, {config.MAX_SEARCHES_PER_RESEARCHER} searches each, {rewrites}.")
     print(f"It will cost roughly {len(names) * CENTS_PER_REPORT} US cents and take a few minutes.")
     if not args.yes and input("Type yes to go ahead: ").strip().lower() != "yes":
         print("Stopped. Nothing was spent.")

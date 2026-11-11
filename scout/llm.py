@@ -20,7 +20,7 @@ def client():
             _client = FakeClient()
         elif config.DEMO_MODE:
             # The live demo gives up on a slow reply sooner, so one question can't run on for ages.
-            _client = anthropic.Anthropic(timeout=config.API_TIMEOUT_SECONDS)
+            _client = anthropic.Anthropic(timeout=config.API_TIMEOUT_SECONDS, max_retries=config.API_MAX_RETRIES)
         else:
             _client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY
     return _client

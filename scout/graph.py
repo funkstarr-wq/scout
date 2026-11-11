@@ -107,16 +107,16 @@ def run_research(
 ) -> dict:
     """Run the whole graph for one question and return the final state.
 
-    With a time_limit (in seconds), researchers stop early enough to leave time
-    for writing, and the run stops with a TimeoutError if it still goes over.
+    With a time_limit (in seconds), researchers stop at half of it, leaving time
+    for writing. Once the limit has passed, Scout hands in the report it has
+    (skipping the fact-check) or, if research hasn't started yet, stops with a
+    TimeoutError. Findings that have been paid for are always written up.
     """
     started = time.monotonic()
-    research_deadline = started + time_limit * 2 / 3 if time_limit is not None else None
+    research_deadline = started + time_limit / 2 if time_limit is not None else None
     state: dict = {"question": question, "findings": []}
     start = {"question": question, "findings": [], "research_deadline": research_deadline}
     for step in graph.stream(start, stream_mode="updates"):
-        if time_limit is not None and time.monotonic() - started > time_limit:
-            raise TimeoutError(f"Scout ran out of time after {time_limit:.0f} seconds")
         for node, update in step.items():
             if not update:
                 continue
@@ -126,4 +126,12 @@ def run_research(
                 state.update(update)
             if on_progress:
                 on_progress(describe(node, update))
+        if time_limit is not None and time.monotonic() - started > time_limit:
+            if state.get("report"):
+                if on_progress:
+                    on_progress("Out of time, so Scout handed in the report without another check")
+                return state
+            if not state["findings"]:
+                raise TimeoutError(f"Scout ran out of time after {time_limit:.0f} seconds")
+            # Findings have been paid for, so carry on and let the writer use them.
     return state

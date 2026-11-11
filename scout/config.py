@@ -9,8 +9,13 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 
 def _switch(name: str) -> bool:
-    """True when a setting like DEMO_MODE is set to 1, true, yes or on."""
-    return os.getenv(name, "").strip().lower() in ("1", "true", "yes", "on")
+    """Read an on/off setting like DEMO_MODE. A typo stops Scout starting rather than quietly meaning 'off'."""
+    raw = os.getenv(name, "").strip().lower()
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("", "0", "false", "no", "off"):
+        return False
+    raise RuntimeError(f"{name} must be 1 (on) or 0 (off). It is set to {raw!r}.")
 
 
 def _whole_number(name: str, default: int, smallest: int = 0) -> int:
@@ -46,6 +51,7 @@ MAX_FINDINGS_PER_RESEARCHER = 8
 MAX_REVISIONS = 0 if DEMO_MODE else 1          # how many times the writer may redo a rejected report
 
 DB_PATH = os.getenv("SCOUT_DB", str(PROJECT_ROOT / "scout.db"))
+DB_PATH_IS_SET = bool(os.getenv("SCOUT_DB", "").strip())
 PASSWORD = os.getenv("SCOUT_PASSWORD", "")
 DAILY_LIMIT = _whole_number("SCOUT_DAILY_LIMIT", 25)   # questions per day, for everyone together
 
@@ -57,8 +63,9 @@ DEMO_QUESTION_MAX_CHARS = 300
 # Live demo limits.
 PER_VISITOR_LIMIT = _whole_number("SCOUT_PER_VISITOR_LIMIT", 2)    # questions per visitor per day
 MAX_CONCURRENT = _whole_number("SCOUT_MAX_CONCURRENT", 1, smallest=1)  # questions running at once
-RUN_TIME_LIMIT_SECONDS = 180      # a demo question that takes longer than this is stopped
+RUN_TIME_LIMIT_SECONDS = 180      # researchers stop at half of this; the fact-check is skipped after it
 API_TIMEOUT_SECONDS = 120         # longest the demo waits for any single reply from Claude
+API_MAX_RETRIES = 1               # the demo tries a failed reply once more at most (each try is billed)
 KEEP_DEMO_DAYS = 30               # demo questions and reports are deleted after this many days
 IP_SALT = os.getenv("SCOUT_IP_SALT", "")  # secret mixed into visitor fingerprints
 
@@ -69,4 +76,9 @@ def check_settings() -> None:
         raise RuntimeError(
             "DEMO_MODE is on, but SCOUT_IP_SALT is missing or shorter than 16 characters. "
             "Set it to a long random string (see the README) and start Scout again."
+        )
+    if DEMO_MODE and not FAKE_MODE and not DB_PATH_IS_SET:
+        raise RuntimeError(
+            "DEMO_MODE is on, but SCOUT_DB isn't set. Point it at a file on a Railway volume, "
+            "like /data/scout.db, or the daily limits would start again every time Scout restarts."
         )
