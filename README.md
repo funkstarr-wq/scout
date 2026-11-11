@@ -1,2 +1,2 @@
-Scout, your into to AI
+# Scout, your intro to AI
 By the last page of this book you will have built Scout, a small web application that answers hard questions the way a good research assistant would. You type a question. Scout breaks it into parts, sends a team of AI researchers out onto the web in parallel, gathers what they find, writes a report with numbered sources, checks its own work, and hands it back to you. You will be able to put it on the internet with a password and use it every day.
