@@ -1,0 +1,8 @@
+{"question": "What is the current population of Iceland, and how has it changed over the last ten years?", "must_cover": ["a recent population figure", "the direction and rough size of change over ten years"]}
+{"question": "How do heat pumps compare with gas boilers on running costs and carbon emissions for a typical UK home?", "must_cover": ["running cost comparison", "carbon emissions comparison", "UK-specific context"]}
+{"question": "What are the main differences between the Python web frameworks FastAPI, Flask and Django?", "must_cover": ["FastAPI", "Flask", "Django", "when to choose each"]}
+{"question": "Who invented the World Wide Web, where, and in what year was the first website published?", "must_cover": ["Tim Berners-Lee", "CERN", "1991"]}
+{"question": "What does the scientific evidence say about the health effects of intermittent fasting compared with ordinary calorie restriction?", "must_cover": ["weight loss comparison", "other health markers", "strength or limits of the evidence"]}
+{"question": "What were the main causes of the 2008 global financial crisis?", "must_cover": ["subprime mortgages", "leverage or securitisation", "bank failures such as Lehman Brothers"]}
+{"question": "Which European countries generate the largest share of their electricity from wind power, and roughly what share is it?", "must_cover": ["at least three countries", "approximate percentages", "year of the data"]}
+{"question": "How does the James Webb Space Telescope differ from the Hubble Space Telescope?", "must_cover": ["wavelengths (infrared vs visible/ultraviolet)", "mirror size", "orbit location"]}
