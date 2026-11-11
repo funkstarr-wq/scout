@@ -5,6 +5,7 @@
                                                                    +--------+  (if rejected)
 """
 import operator
+import time
 from typing import Annotated, Callable, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -21,11 +22,13 @@ class ScoutState(TypedDict, total=False):
     sources: list[dict]
     review: dict
     revisions: int
+    research_deadline: float | None  # researchers stop starting new turns after this
 
 
 class ResearchJob(TypedDict):
     question: str
     subtask: dict
+    deadline: float | None
 
 
 def plan_node(state: ScoutState) -> dict:
@@ -34,11 +37,13 @@ def plan_node(state: ScoutState) -> dict:
 
 def send_to_researchers(state: ScoutState) -> list[Send]:
     # One Send per task: LangGraph runs all the research nodes at the same time.
-    return [Send("research", {"question": state["question"], "subtask": t}) for t in state["subtasks"]]
+    deadline = state.get("research_deadline")
+    return [Send("research", {"question": state["question"], "subtask": t, "deadline": deadline})
+            for t in state["subtasks"]]
 
 
 def research_node(job: ResearchJob) -> dict:
-    return {"findings": agents.research_subtask(job["question"], job["subtask"])}
+    return {"findings": agents.research_subtask(job["question"], job["subtask"], job.get("deadline"))}
 
 
 def write_node(state: ScoutState) -> dict:
@@ -88,14 +93,30 @@ def describe(node: str, update: dict) -> str:
     if node == "review":
         if update["review"]["approved"]:
             return "Fact-checker approved the report"
-        return f"Fact-checker asked for {len(update['review']['problems'])} fix(es)"
+        problems = len(update["review"]["problems"])
+        if config.MAX_REVISIONS == 0:
+            return f"Fact-checker flagged {problems} possible problem(s). The live demo skips rewrites to save money"
+        return f"Fact-checker asked for {problems} fix(es)"
     return node
 
 
-def run_research(question: str, on_progress: Callable[[str], None] | None = None) -> dict:
-    """Run the whole graph for one question and return the final state."""
+def run_research(
+    question: str,
+    on_progress: Callable[[str], None] | None = None,
+    time_limit: float | None = None,
+) -> dict:
+    """Run the whole graph for one question and return the final state.
+
+    With a time_limit (in seconds), researchers stop early enough to leave time
+    for writing, and the run stops with a TimeoutError if it still goes over.
+    """
+    started = time.monotonic()
+    research_deadline = started + time_limit * 2 / 3 if time_limit is not None else None
     state: dict = {"question": question, "findings": []}
-    for step in graph.stream({"question": question, "findings": []}, stream_mode="updates"):
+    start = {"question": question, "findings": [], "research_deadline": research_deadline}
+    for step in graph.stream(start, stream_mode="updates"):
+        if time_limit is not None and time.monotonic() - started > time_limit:
+            raise TimeoutError(f"Scout ran out of time after {time_limit:.0f} seconds")
         for node, update in step.items():
             if not update:
                 continue

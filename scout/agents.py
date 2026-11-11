@@ -1,5 +1,6 @@
 """Scout's four agents: the planner, the researchers, the writer and the reviewer."""
 import re
+import time
 
 from . import config, llm
 from .prompts import load_prompt
@@ -51,8 +52,12 @@ def plan_research(question: str) -> list[dict]:
 
 
 # ------------------------------------------------------------- researcher
-def research_subtask(question: str, subtask: dict) -> list[dict]:
-    """One researcher: an agent in a loop with web_search and record_finding."""
+def research_subtask(question: str, subtask: dict, deadline: float | None = None) -> list[dict]:
+    """One researcher: an agent in a loop with web_search and record_finding.
+
+    If a deadline is given (a time.monotonic() value), the researcher stops
+    taking new turns once it has passed and hands in what it has found so far.
+    """
     findings: list[dict] = []
     hints = ", ".join(subtask.get("search_hints", []))
     messages = [
@@ -67,6 +72,8 @@ def research_subtask(question: str, subtask: dict) -> list[dict]:
     ]
 
     for _turn in range(config.MAX_RESEARCH_TURNS):
+        if deadline is not None and time.monotonic() > deadline:
+            break  # out of time: keep what we have rather than spend more
         response = llm.client().messages.create(
             model=config.WORKER_MODEL,
             max_tokens=4000,
