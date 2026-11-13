@@ -2,22 +2,29 @@
 
 Pages:
     /                  the book's website (always public)
+    /book              the free-book form posts here; download links are /book/<token>/pdf or /epub
+    /admin/signups.csv the list of readers who asked for the book (needs SCOUT_ADMIN_PASSWORD)
     /demo              the Scout page itself (password-protected unless DEMO_MODE is on)
     /examples/<name>   three finished example reports (always public, never call Claude)
     /privacy           what the live demo stores (always public)
 """
+import csv
 import hashlib
 import hmac
+import html
+import io
 import ipaddress
 import logging
 import re
 import secrets
 import threading
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import parse_qs
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel, Field
 
@@ -248,6 +255,110 @@ def example_page(name: str):
 @app.get("/privacy")
 def privacy():
     return FileResponse(STATIC / "privacy.html")
+
+
+# --------------------------------------------------------------- the free book
+FONT_FILE = re.compile(r"charis-sil-latin-(400|700)-(normal|italic)\.woff2")
+EDITIONS = {"pdf": ("Building-Scout.pdf", "application/pdf"), "epub": ("Building-Scout.epub", "application/epub+zip")}
+EMAIL = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
+LONGEST_FORM = 10_000  # bytes; the real form is a few hundred
+
+
+def fill_page(template: str, status_code: int = 200, **values: str) -> HTMLResponse:
+    """A page from scout/static with its {{PLACEHOLDERS}} filled in. Values are escaped, so a
+    name typed into the form shows as text and can never add anything to the page."""
+    text = (STATIC / template).read_text(encoding="utf-8")
+    for key, value in values.items():
+        text = text.replace("{{" + key + "}}", html.escape(value))
+    return HTMLResponse(text, status_code=status_code)
+
+
+def book_problem(title: str, message: str, status_code: int) -> HTMLResponse:
+    return fill_page("book_problem.html", status_code, TITLE=title, MESSAGE=message)
+
+
+def spreadsheet_safe(value: str) -> str:
+    """Stop a 'name' like =HYPERLINK(...) from running as a formula when the list is opened in Excel."""
+    return "'" + value if value[:1] in ("=", "+", "-", "@", "\t", "\r") else value
+
+
+@app.get("/fonts/{name}")
+def font(name: str):
+    if not FONT_FILE.fullmatch(name):
+        raise HTTPException(404, "No such font.")
+    return FileResponse(STATIC / "fonts" / name, media_type="font/woff2",
+                        headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
+
+@app.get("/book")
+def book_form():
+    return RedirectResponse("/#free", status_code=303)
+
+
+@app.post("/book")
+async def ask_for_book(request: Request):
+    if int(request.headers.get("content-length") or 0) > LONGEST_FORM:
+        return book_problem("That was more than the form expects", "Please go back and try again.", 413)
+    body = await request.body()
+    if len(body) > LONGEST_FORM:
+        return book_problem("That was more than the form expects", "Please go back and try again.", 413)
+    form = {key: values[0] for key, values in parse_qs(body.decode("utf-8", "replace"), keep_blank_values=True).items()}
+    first_name = " ".join(form.get("first_name", "").split())
+    surname = " ".join(form.get("surname", "").split())
+    email = form.get("email", "").strip()
+
+    if form.get("website"):  # a hidden box people never see; only robots fill it in
+        return book_problem("Something went wrong", "Please go back and try again.", 400)
+    if not (1 <= len(first_name) <= 60 and 1 <= len(surname) <= 60):
+        return book_problem("Please add your name", "The book needs your first name and surname. Go back and fill them in.", 400)
+    if len(email) > 254 or not EMAIL.fullmatch(email):
+        return book_problem("Please check your email address",
+                            f"\u201c{email}\u201d doesn't look like an email address. Go back and check it.", 400)
+
+    token = store.save_signup(first_name, surname, email, email_ok=form.get("email_ok") == "yes")
+    return fill_page("book_ready.html", FIRST_NAME=first_name,
+                     PDF_URL=f"/book/{token}/pdf", EPUB_URL=f"/book/{token}/epub")
+
+
+@app.get("/book/{token}/{edition}")
+def download_book(token: str, edition: str):
+    signup = store.find_signup(token) if edition in EDITIONS else None
+    if signup is None:
+        return book_problem("This download link doesn't work",
+                            "It may have been replaced by a newer one. Fill in the form again for a fresh link.", 404)
+    made = datetime.fromisoformat(signup["token_created_at"])
+    if store.utcnow() - made > timedelta(days=config.BOOK_LINK_DAYS):
+        return book_problem("This download link has expired",
+                            f"Links work for {config.BOOK_LINK_DAYS} days. Fill in the form again for a new one.", 410)
+    filename, media_type = EDITIONS[edition]
+    path = config.BOOK_DIR / filename
+    if not path.exists():
+        return book_problem("The book isn't quite ready", "Please try again a little later.", 503)
+    store.count_download(token)
+    return FileResponse(path, media_type=media_type, filename=filename, headers={"Cache-Control": "private, no-store"})
+
+
+@app.get("/admin/signups.csv")
+def signups_csv(credentials: HTTPBasicCredentials | None = Depends(basic)):
+    """The readers who asked for the book, as a spreadsheet. Username: admin."""
+    if not config.ADMIN_PASSWORD:
+        raise HTTPException(404)
+    ok = credentials is not None and secrets.compare_digest(
+        credentials.username.encode() + b":" + credentials.password.encode(),
+        b"admin:" + config.ADMIN_PASSWORD.encode(),
+    )
+    if not ok:
+        raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="Building Scout admin"'})
+    out = io.StringIO()
+    sheet = csv.writer(out)
+    sheet.writerow(["First name", "Surname", "Email", "Happy to get emails", "First asked", "Last asked", "Downloads"])
+    for row in store.list_signups():
+        sheet.writerow([spreadsheet_safe(row["first_name"]), spreadsheet_safe(row["surname"]),
+                        spreadsheet_safe(row["email"]), "yes" if row["email_ok"] else "no",
+                        row["created_at"], row["updated_at"], row["downloads"]])
+    return Response(out.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": 'attachment; filename="building-scout-readers.csv"',
+                             "Cache-Control": "no-store"})
 
 
 # ------------------------------------------------------------------------- API

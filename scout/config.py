@@ -69,6 +69,13 @@ API_MAX_RETRIES = 1               # the demo tries a failed reply once more at m
 KEEP_DEMO_DAYS = 30               # demo questions and reports are deleted after this many days
 IP_SALT = os.getenv("SCOUT_IP_SALT", "")  # secret mixed into visitor fingerprints
 
+# The free book. Readers fill in a short form, then get download links that work for a week.
+BOOK_DIR = PROJECT_ROOT / "book"          # Building-Scout.pdf and Building-Scout.epub live here
+BOOK_LINK_DAYS = 7
+# Password for downloading the list of readers who asked for the book (/admin/signups.csv,
+# username "admin"). Leave it unset and that page doesn't exist.
+ADMIN_PASSWORD = os.getenv("SCOUT_ADMIN_PASSWORD", "")
+
 
 def check_settings() -> None:
     """Stop Scout from starting if the live demo would run without its safety settings."""

@@ -11,6 +11,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - Run tests (free, no API calls): `python -m pytest -q`
 - Run the evaluation (costs money, calls Claude): `python -m evals.run_eval --limit 3`
 - Make the website's example reports (costs money, calls Claude): `python scripts/make_examples.py`
+- Rebuild the free book from `Building-Scout.docx` (free): `python scripts/build_book.py` (needs `requirements-book.txt`)
 
 ## Layout
 - `scout/graph.py` the LangGraph workflow: plan -> research (parallel) -> write -> review
@@ -20,6 +21,9 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - `scout/static/index.html` the Scout page (served at /demo); `scout/static/site/` the book's website
 - `scout/static/example.html`, `privacy.html`, `coming_soon.html`, `not_found.html` the other pages
 - `scout/examples.py` the three example reports; `scripts/make_examples.py` makes them
+- `book/` the free book: the PDF and EPUB readers download, plus the filter and styles `scripts/build_book.py` uses
+- `scout/static/book_ready.html`, `book_problem.html` the pages after the free-book form; sign-ups are in `store.py`
+- `scout/static/fonts/` Charis SIL, the cover's typeface (SIL Open Font Licence); every page uses it
 - `scout/store.py` SQLite storage; `scout/mcp_server.py` Scout as an MCP tool
 - `tests/` uses a fake Claude (`scout/fake_llm.py`), so tests never need an API key; `SCOUT_FAKE=1` uses it in the app
 - `scout/config.py` `DEMO_MODE=1` turns on the public live demo: no password, lower effort, per-visitor and daily limits
@@ -30,6 +34,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - Never edit `evals/questions.jsonl` or `evals/run_eval.py`; they are the referee.
 - Never run anything that calls the real API (the evaluation, `scripts/make_examples.py`) unless the owner asks.
 - The live demo spends the owner's money: never weaken a demo limit without asking.
+- Readers' names and emails (the `signups` table) are personal data: never print, log or export them except through `/admin/signups.csv`.
 - Every new feature needs a test in `tests/` that uses the fake client, not the real API.
 - Keep prompts in `scout/prompts/`, not inside Python code.
 - Explain changes in plain English: the owner of this project is not a programmer.

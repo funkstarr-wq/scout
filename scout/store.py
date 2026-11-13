@@ -1,5 +1,6 @@
 """Saves research jobs and their reports in a small SQLite database file."""
 import json
+import secrets
 import sqlite3
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -21,6 +22,20 @@ def _connect():
                created_at TEXT NOT NULL,
                visitor_id TEXT,
                ip_hash TEXT
+           )"""
+    )
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS signups (
+               email_key TEXT PRIMARY KEY,
+               first_name TEXT NOT NULL,
+               surname TEXT NOT NULL,
+               email TEXT NOT NULL,
+               email_ok INTEGER NOT NULL DEFAULT 0,
+               created_at TEXT NOT NULL,
+               updated_at TEXT NOT NULL,
+               token TEXT NOT NULL UNIQUE,
+               token_created_at TEXT NOT NULL,
+               downloads INTEGER NOT NULL DEFAULT 0
            )"""
     )
     # Databases made before the live demo existed lack the last two columns. Add them.
@@ -171,3 +186,46 @@ def fail_unfinished_jobs(message: str) -> None:
     """Mark questions that were still running when Scout stopped, so their pages stop waiting."""
     with _connect() as conn:
         conn.execute("UPDATE jobs SET status = 'failed', error = ? WHERE status = 'running'", (message,))
+
+
+# ------------------------------------------------------------- the free book
+def save_signup(first_name: str, surname: str, email: str, email_ok: bool) -> str:
+    """Record a reader who asked for the book, and return a fresh download token.
+
+    Asking again with the same email updates their details (including whether
+    they're happy to get emails) rather than adding a second entry.
+    """
+    token = secrets.token_urlsafe(24)
+    now = _now()
+    with _connect() as conn:
+        conn.execute(
+            """INSERT INTO signups (email_key, first_name, surname, email, email_ok, created_at,
+                                    updated_at, token, token_created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(email_key) DO UPDATE SET
+                   first_name = excluded.first_name, surname = excluded.surname, email = excluded.email,
+                   email_ok = excluded.email_ok, updated_at = excluded.updated_at,
+                   token = excluded.token, token_created_at = excluded.token_created_at""",
+            (email.lower(), first_name, surname, email, int(email_ok), now, now, token, now),
+        )
+    return token
+
+
+def find_signup(token: str) -> dict | None:
+    with _connect() as conn:
+        row = conn.execute("SELECT * FROM signups WHERE token = ?", (token,)).fetchone()
+    return dict(row) if row else None
+
+
+def count_download(token: str) -> None:
+    with _connect() as conn:
+        conn.execute("UPDATE signups SET downloads = downloads + 1 WHERE token = ?", (token,))
+
+
+def list_signups() -> list[dict]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT first_name, surname, email, email_ok, created_at, updated_at, downloads "
+            "FROM signups ORDER BY created_at"
+        ).fetchall()
+    return [dict(r) for r in rows]

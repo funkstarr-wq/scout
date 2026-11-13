@@ -21,7 +21,9 @@
     og-image.jpg   The picture shown in link previews (1200 x 630).
     author.jpg     Your photo for "About the author" (square).
 
-  Your name and bio are written straight into the page: search for "Chris Haworth".
+  Your name, bio and LinkedIn link are written straight into the page:
+  search for "Chris Haworth". The design follows the book's cover: its teal and
+  cream, and its typeface (Charis SIL, a free version of Charter, in ../fonts/).
   ============================================================================
 -->
 <html lang="en-GB">
@@ -29,17 +31,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Building Scout: A plain-English guide to AI agents</title>
-<meta name="description" content="Build a working AI research assistant, even if you've never written code. A plain-English guide to AI agents, Claude Code, tools, MCP and more.">
+<meta name="description" content="Build a working AI research assistant, even if you've never written code. A plain-English guide to AI agents, Claude Code, tools, MCP and more. Free to download as PDF and EPUB.">
 <meta name="author" content="Chris Haworth">
 <link rel="canonical" href="{{SITE_URL}}/">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#faf7f1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#174f49">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Building Scout">
 <meta property="og:title" content="Building Scout: A plain-English guide to AI agents, and the tools that build them">
-<meta property="og:description" content="Build a working AI research assistant, even if you've never written code.">
+<meta property="og:description" content="Build a working AI research assistant, even if you've never written code. Free to download.">
 <meta property="og:url" content="{{SITE_URL}}/">
 <meta property="og:image" content="{{SITE_URL}}/og-image.jpg">
 <meta property="og:image:width" content="1200">
@@ -48,111 +49,116 @@
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary_large_image">
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231b5e57'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='700' fill='%23faf7f1' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23174f49'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='700' fill='%23f4ecdc' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preload" href="fonts/charis-sil-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/charis-sil-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
+  /* The cover's typeface: Charis SIL (SIL Open Font Licence), a free version of Charter. */
+  @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/charis-sil-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: italic; font-display: swap; src: url("fonts/charis-sil-latin-400-italic.woff2") format("woff2"); }
+  @font-face { font-family: "Charis SIL"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/charis-sil-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Charis SIL"; font-weight: 700; font-style: italic; font-display: swap; src: url("fonts/charis-sil-latin-700-italic.woff2") format("woff2"); }
+
+  /* Layout: the hero and footer are set like the cover (cream on deep teal); the pages between are paper. */
   :root {
-    --bg: #faf7f1;
-    --surface: #f2ede3;
-    --text: #1e1c19;
-    --muted: #57524a;
-    --rule: #ddd5c7;
-    --accent: #1b5e57;
-    --on-accent: #ffffff;
-    --serif: "Iowan Old Style", Charter, "Bitstream Charter", "Sitka Text", "Palatino Linotype", Palatino, Cambria, Georgia, serif;
+    --teal: #174f49;        /* the cover */
+    --cream: #f4ecdc;       /* the cover's lettering */
+    --on-teal-muted: #c8d8d2;
+    --paper: #faf6ee;
+    --surface: #f1eadb;
+    --ink: #1e1c19;
+    --muted: #59544b;
+    --rule: #ddd3c1;
+    --accent: #174f49;      /* headings and links on paper */
+    --serif: "Charis SIL", Charter, "Bitstream Charter", "Iowan Old Style", Cambria, Georgia, serif;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #151412;
-      --surface: #1f1d1a;
-      --text: #ece6db;
-      --muted: #b5ac9f;
-      --rule: #3a362f;
-      --accent: #86cbc1;
-      --on-accent: #0f1f1d;
+      --paper: #0f1f1d;
+      --surface: #172b28;
+      --ink: #efe7d8;
+      --muted: #b8b1a4;
+      --rule: #2c423e;
+      --accent: #9cd2c7;
     }
   }
 
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-  @media (prefers-reduced-motion: no-preference) {
-    html { scroll-behavior: smooth; }
-  }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--serif);
-    font-size: 1.1875rem;
-    line-height: 1.65;
-  }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 1.1875rem; line-height: 1.65; }
   img, svg { max-width: 100%; height: auto; }
   a { color: var(--accent); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
   a:hover { text-decoration-thickness: 2px; }
   :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
 
-  h1, h2, h3 { font-weight: 600; line-height: 1.15; margin: 0; text-wrap: balance; }
-  h2 { font-size: clamp(1.75rem, 3.6vw, 2.25rem); margin-bottom: 1rem; letter-spacing: -0.005em; }
+  h1, h2, h3 { font-weight: 700; line-height: 1.15; margin: 0; text-wrap: balance; }
+  h2 { font-size: clamp(1.75rem, 3.6vw, 2.3rem); color: var(--accent); margin-bottom: 1rem; letter-spacing: -0.005em; }
+  h2::after { content: ""; display: block; width: 3.5rem; height: 3px; background: currentColor; margin-top: 0.7rem; }
   h3 { font-size: 1.25rem; }
   p { margin: 0 0 1rem; }
 
   .skip-link {
-    position: absolute; left: 1rem; top: -4rem; z-index: 10;
-    padding: 0.6rem 1rem; border-radius: 6px;
-    background: var(--accent); color: var(--on-accent);
-    font-family: var(--sans); font-size: 1rem; text-decoration: none;
+    position: absolute; left: 1rem; top: -4rem; z-index: 10; padding: 0.6rem 1rem; border-radius: 6px;
+    background: var(--cream); color: var(--teal); font-family: var(--sans); font-size: 1rem; text-decoration: none;
   }
   .skip-link:focus { top: 1rem; }
-  .visually-hidden {
-    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-  }
 
   .wrap { max-width: 68rem; margin: 0 auto; padding: 0 1.25rem; }
   .prose { max-width: 40rem; }
   .lede { color: var(--muted); font-size: 1.125rem; }
-  .eyebrow {
-    font-family: var(--sans); font-size: 0.8125rem; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
-    margin: 0 0 0.75rem;
-  }
+  .small { font-family: var(--sans); font-size: 0.9rem; color: var(--muted); }
+  .eyebrow { font-size: 1rem; font-style: italic; margin: 0 0 1.25rem; }
 
   section { padding: 4.5rem 0; border-top: 1px solid var(--rule); }
   @media (max-width: 40rem) { section { padding: 3.25rem 0; } }
 
-  /* ---------- Hero ---------- */
-  .hero { border-top: 0; padding: 4rem 0 4.5rem; }
+  /* ---------- Hero: set like the cover ---------- */
+  .hero { background: var(--teal); color: var(--cream); border-top: 0; padding: 4rem 0 2.5rem; }
+  .hero a:not(.button) { color: var(--cream); }
+  .hero :focus-visible { outline-color: var(--cream); }
   .hero-grid { display: grid; gap: 2.5rem; align-items: center; }
   @media (min-width: 48rem) {
-    .hero { padding: 6rem 0; }
-    .hero-grid { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 4rem; }
+    .hero { padding: 5.5rem 0 3rem; }
+    .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 4rem; }
   }
-  .hero h1 { font-size: clamp(2.75rem, 7vw, 4.5rem); letter-spacing: -0.015em; line-height: 1.02; }
-  .subtitle {
-    font-size: clamp(1.25rem, 2.4vw, 1.5rem); font-style: italic;
-    color: var(--muted); line-height: 1.35; margin: 0.9rem 0 1.5rem;
-  }
-  .tagline { font-size: clamp(1.2rem, 2.2vw, 1.375rem); max-width: 30rem; margin-bottom: 2rem; }
+  .hero .eyebrow { color: var(--on-teal-muted); }
+  .hero h1 { font-weight: 400; }
+  .t-small { display: block; font-style: italic; font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1; margin-left: 0.05em; }
+  .t-big { display: block; font-weight: 700; font-size: clamp(4.5rem, 12vw, 8.25rem); line-height: 0.9; letter-spacing: -0.02em; }
+  .cover-rule { width: 4.5rem; height: 3px; background: var(--cream); opacity: 0.85; margin: 1.75rem 0 1.4rem 0.1em; }
+  .subtitle { font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-style: italic; line-height: 1.35; max-width: 30rem; margin: 0 0 1.25rem; }
+  .tagline { font-size: clamp(1.1rem, 2vw, 1.25rem); color: var(--on-teal-muted); max-width: 30rem; margin-bottom: 2rem; }
   .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-  .button {
-    display: inline-flex; align-items: center; justify-content: center;
-    min-height: 3rem; padding: 0.75rem 1.4rem; border-radius: 6px;
-    font-family: var(--sans); font-size: 1rem; font-weight: 600; line-height: 1.2;
-    text-decoration: none; border: 2px solid var(--accent);
-  }
-  .button-primary { background: var(--accent); color: var(--on-accent); }
-  .button-primary:hover { filter: brightness(1.1); }
-  .button-secondary { background: transparent; color: var(--accent); }
-  .button-secondary:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
-  @media (max-width: 26rem) { .button { flex: 1 1 100%; } }
-
-  .cover { justify-self: center; width: min(100%, 19rem); }
+  .hero-note { margin: 1rem 0 0; font-family: var(--sans); font-size: 0.9rem; color: var(--on-teal-muted); }
+  .cover { justify-self: center; width: min(100%, 18rem); }
   .cover img {
     display: block; width: 100%; aspect-ratio: 2 / 3; border-radius: 3px 6px 6px 3px;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 14px 36px rgb(0 0 0 / 0.16);
+    outline: 1px solid rgb(244 236 220 / 0.35); outline-offset: 6px;
+    box-shadow: 0 18px 40px rgb(0 0 0 / 0.35);
   }
-  @media (max-width: 47.99rem) { .cover { width: min(70%, 15rem); } }
+  @media (max-width: 47.99rem) { .cover { width: min(60%, 13rem); } }
+  .motif-band { margin-top: 2.5rem; }
+  .motif { display: block; width: 100%; max-width: 26rem; height: auto; }
+  .motif path { fill: none; stroke: var(--cream); stroke-width: 3; opacity: 0.55; }
+  .motif circle { fill: var(--teal); stroke: var(--cream); stroke-width: 3; opacity: 0.9; }
+  .motif circle.dot { fill: var(--cream); stroke: none; }
+
+  .button {
+    display: inline-flex; align-items: center; justify-content: center; min-height: 3rem; padding: 0.75rem 1.4rem;
+    border-radius: 6px; font-family: var(--sans); font-size: 1rem; font-weight: 600; line-height: 1.2;
+    text-decoration: none; border: 2px solid transparent; cursor: pointer;
+  }
+  .button-cream { background: var(--cream); color: var(--teal); border-color: var(--cream); }
+  .button-cream:hover { background: #fffaf0; }
+  .button-outline { background: transparent; color: var(--cream); border-color: rgb(244 236 220 / 0.7); }
+  .button-outline:hover { background: rgb(244 236 220 / 0.1); }
+  .button-teal { background: var(--teal); color: var(--cream); border-color: var(--teal); }
+  .button-teal:hover { filter: brightness(1.15); }
+  @media (prefers-color-scheme: dark) { .button-teal { border-color: var(--accent); } }
+  @media (max-width: 26rem) { .actions .button { flex: 1 1 100%; } }
 
   /* ---------- What you'll build ---------- */
   .points { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; gap: 1.5rem; }
@@ -170,17 +176,16 @@
     .diagram .diagram-wide { display: none; }
     .diagram .diagram-tall { display: block; }
   }
-  .dg-box { fill: var(--bg); stroke: var(--rule); stroke-width: 1.5; }
-  .dg-end { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
+  .dg-box { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+  .dg-end { fill: var(--paper); stroke: var(--accent); stroke-width: 2; }
   .dg-group { fill: none; stroke: var(--muted); stroke-width: 1.25; stroke-dasharray: 5 4; }
-  .dg-label { fill: var(--text); font-family: var(--sans); font-size: 15px; font-weight: 600; }
-  .dg-note { fill: var(--muted); font-family: var(--sans); font-size: 12.5px; font-style: italic; }
+  .dg-label { fill: var(--ink); font-family: var(--sans); font-size: 15px; font-weight: 600; }
+  .dg-note { fill: var(--muted); font-family: var(--serif); font-size: 13px; font-style: italic; }
   .dg-line { stroke: var(--muted); stroke-width: 1.75; fill: none; }
   .dg-head { fill: var(--muted); }
-
   .steps { margin: 0; padding-left: 1.5rem; display: grid; gap: 0.6rem; }
   @media (min-width: 48rem) { .steps { grid-template-columns: 1fr 1fr; column-gap: 3rem; } }
-  .steps li::marker { color: var(--muted); font-family: var(--sans); font-size: 0.95em; }
+  .steps li::marker { color: var(--muted); }
 
   /* ---------- Contents ---------- */
   .parts { display: grid; gap: 1.25rem; margin-top: 2rem; }
@@ -188,14 +193,31 @@
   @media (min-width: 64rem) { .parts { grid-template-columns: repeat(3, 1fr); } }
   .part { background: var(--surface); border-radius: 10px; padding: 1.4rem 1.5rem 1.2rem; }
   .part h3 { margin-bottom: 0.75rem; }
-  .part-num {
-    display: block; margin-bottom: 0.3rem;
-    font-family: var(--sans); font-size: 0.8125rem; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
-  }
+  .part-num { display: block; margin-bottom: 0.2rem; font-size: 1rem; font-weight: 400; font-style: italic; color: var(--muted); }
   .part ol { margin: 0; padding-left: 1.75rem; }
   .part li { padding-left: 0.25rem; margin-bottom: 0.35rem; line-height: 1.4; }
-  .part li::marker { color: var(--muted); font-family: var(--sans); font-size: 0.9em; }
+  .part li::marker { color: var(--muted); }
+
+  /* ---------- Get the book free ---------- */
+  .free { background: var(--surface); }
+  .free-grid { display: grid; gap: 2.5rem; align-items: start; }
+  @media (min-width: 52rem) { .free-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 4rem; } }
+  .free-form { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 1.5rem; }
+  @media (min-width: 30rem) { .free-form { padding: 2rem; } }
+  .field-row { display: grid; gap: 0 1rem; }
+  @media (min-width: 30rem) { .field-row { grid-template-columns: 1fr 1fr; } }
+  .field { margin: 0 0 1.1rem; }
+  .field label { display: block; font-family: var(--sans); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.35rem; }
+  .field input {
+    width: 100%; min-height: 2.9rem; padding: 0.6rem 0.75rem; border-radius: 6px; border: 1.5px solid var(--muted);
+    background: var(--paper); color: var(--ink); font: inherit; font-family: var(--sans); font-size: 1rem;
+  }
+  .check { display: grid; grid-template-columns: auto 1fr; gap: 0.6rem; align-items: start; margin: 0.25rem 0 1.4rem;
+           font-family: var(--sans); font-size: 0.92rem; line-height: 1.45; color: var(--muted); }
+  .check input { width: 1.15rem; height: 1.15rem; margin: 0.15rem 0 0; accent-color: var(--teal); }
+  .trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  .free-form .button { width: 100%; margin-bottom: 0.9rem; }
+  .free-form .small { margin: 0; }
 
   /* ---------- Who it's for + what you'll need, side by side ---------- */
   .pair-band { border-top: 1px solid var(--rule); padding: 4.5rem 0; }
@@ -206,42 +228,39 @@
   .ticks { list-style: none; margin: 0; padding: 0; }
   .ticks li { position: relative; padding-left: 1.6rem; margin-bottom: 0.85rem; }
   .ticks li::before {
-    content: ""; position: absolute; left: 0.1rem; top: 0.62em;
-    width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--accent);
+    content: ""; position: absolute; left: 0.1rem; top: 0.55em; width: 0.6rem; height: 0.6rem; border-radius: 50%;
+    border: 2px solid var(--accent); background: transparent;
   }
 
   /* ---------- Example reports ---------- */
   .cards { list-style: none; padding: 0; margin: 2rem 0 1.5rem; display: grid; gap: 1.25rem; }
   @media (min-width: 48rem) { .cards { grid-template-columns: repeat(3, 1fr); } }
-  .card {
-    position: relative; display: flex; flex-direction: column; height: 100%;
-    background: var(--surface); border: 1px solid transparent; border-radius: 10px;
-    padding: 1.4rem 1.5rem;
-  }
+  .card { position: relative; display: flex; flex-direction: column; height: 100%; background: var(--surface);
+          border: 1px solid transparent; border-radius: 10px; padding: 1.4rem 1.5rem; }
   .card:hover { border-color: var(--accent); }
   .card:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
   .card h3 { font-size: 1.2rem; line-height: 1.3; margin-bottom: 1.25rem; }
-  .card h3 a { color: var(--text); text-decoration: none; }
+  .card h3 a { color: var(--ink); text-decoration: none; }
   .card h3 a:focus-visible { outline: none; }
   .card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: 10px; }
-  .card-cta {
-    margin: auto 0 0; font-family: var(--sans); font-size: 0.95rem; font-weight: 600; color: var(--accent);
-  }
+  .card-cta { margin: auto 0 0; font-family: var(--sans); font-size: 0.95rem; font-weight: 600; color: var(--accent); }
 
-  /* ---------- About + footer ---------- */
+  /* ---------- About the author ---------- */
   .author { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1.75rem; align-items: start; max-width: 46rem; }
-  .author img { width: 7rem; height: 7rem; border-radius: 50%; object-fit: cover; }
-  @media (max-width: 30rem) {
-    .author { grid-template-columns: 1fr; gap: 1rem; }
-    .author img { width: 6rem; height: 6rem; }
-  }
-  .author-name { font-size: 1.3rem; font-weight: 600; line-height: 1.2; margin: 0 0 0.2rem; }
-  .author-role { font-family: var(--sans); font-size: 0.9rem; color: var(--muted); margin: 0 0 1rem; }
+  .author img { width: 7rem; height: 7rem; border-radius: 50%; object-fit: cover; outline: 3px solid var(--accent); outline-offset: 3px; }
+  @media (max-width: 30rem) { .author { grid-template-columns: 1fr; gap: 1rem; } .author img { width: 6rem; height: 6rem; } }
+  .author-name { font-size: 1.3rem; font-weight: 700; line-height: 1.2; margin: 0 0 0.2rem; }
+  .author-role { font-size: 1rem; font-style: italic; color: var(--muted); margin: 0 0 1rem; }
   .author cite { font-style: italic; }
-  footer { border-top: 1px solid var(--rule); padding: 2.5rem 0 3rem; font-family: var(--sans); font-size: 0.95rem; color: var(--muted); }
-  footer a { color: var(--muted); }
-  .footer-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; list-style: none; padding: 0; margin: 0 0 1rem; }
-  .footer-links a { color: var(--text); }
+  .author-links { font-family: var(--sans); font-size: 0.95rem; font-weight: 600; margin: 0; }
+
+  /* ---------- Footer: the back cover ---------- */
+  footer { background: var(--teal); color: var(--on-teal-muted); padding: 2.75rem 0 3rem; font-family: var(--sans); font-size: 0.95rem; }
+  footer a { color: var(--cream); }
+  footer :focus-visible { outline-color: var(--cream); }
+  .footer-title { font-family: var(--serif); font-size: 1.35rem; color: var(--cream); margin: 0 0 1rem; }
+  .footer-title em { font-weight: 400; }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; list-style: none; padding: 0; margin: 0 0 1.25rem; }
   footer p { margin: 0 0 0.5rem; max-width: 46rem; }
 </style>
 </head>
@@ -251,22 +270,34 @@
 
 <main id="main">
 
-  <!-- Hero -->
+  <!-- Hero: set like the cover -->
   <section class="hero" aria-labelledby="title">
-    <div class="wrap hero-grid">
-      <div>
-        <p class="eyebrow">A book by Chris Haworth</p>
-        <h1 id="title">Building Scout</h1>
-        <p class="subtitle">A plain-English guide to AI agents, and the tools that build them</p>
-        <p class="tagline">Build a working AI research assistant, even if you've never written code.</p>
-        <div class="actions">
-          <a class="button button-primary" href="{{AMAZON_URL}}">Buy on Amazon</a>
-          <a class="button button-secondary" href="/demo">Try the live demo</a>
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">A book by Chris Haworth</p>
+          <h1 id="title"><span class="t-small">Building</span> <span class="t-big">Scout</span></h1>
+          <div class="cover-rule"></div>
+          <p class="subtitle">A plain-English guide to AI agents, and the tools that build them</p>
+          <p class="tagline">Build a working AI research assistant, even if you've never written code.</p>
+          <div class="actions">
+            <a class="button button-cream" href="#free">Get the book free</a>
+            <a class="button button-outline" href="/demo">Try the live demo</a>
+          </div>
+          <p class="hero-note">Free as a PDF or EPUB. Or <a href="{{AMAZON_URL}}">buy it on Amazon</a>.</p>
+        </div>
+        <div class="cover">
+          <img src="cover.jpg" width="400" height="600"
+               alt="The cover of Building Scout: A plain-English guide to AI agents, and the tools that build them.">
         </div>
       </div>
-      <div class="cover">
-        <img src="cover.jpg" width="400" height="600"
-             alt="The cover of Building Scout: A plain-English guide to AI agents, and the tools that build them.">
+      <div class="motif-band" aria-hidden="true">
+        <svg class="motif" viewBox="0 0 632 200" focusable="false">
+          <path d="M20 100 H130 M130 100 C190 100 210 30 280 30 M130 100 H280 M130 100 C190 100 210 170 280 170 M280 30 C350 30 370 100 430 100 M280 100 H430 M280 170 C350 170 370 100 430 100 M430 100 H612"/>
+          <circle class="dot" cx="20" cy="100" r="11"/><circle cx="130" cy="100" r="15"/>
+          <circle cx="280" cy="30" r="15"/><circle cx="280" cy="100" r="15"/><circle cx="280" cy="170" r="15"/>
+          <circle cx="430" cy="100" r="15"/><circle cx="521" cy="100" r="15"/><circle class="dot" cx="612" cy="100" r="11"/>
+        </svg>
       </div>
     </div>
   </section>
@@ -454,6 +485,47 @@
     </div>
   </section>
 
+  <!-- Get the book free -->
+  <section class="free" id="free" aria-labelledby="free-title">
+    <div class="wrap free-grid">
+      <div class="free-copy">
+        <h2 id="free-title">Get the book free</h2>
+        <p class="lede">The whole book, free to download: fifteen chapters, every prompt and every command, ready to follow along.</p>
+        <ul class="ticks">
+          <li><strong>PDF</strong> for reading on a computer, or printing.</li>
+          <li><strong>EPUB</strong> for e-readers, phones and tablets: Apple Books, Kobo, Google Play Books and most others.</li>
+        </ul>
+        <p class="small">Prefer to buy a copy? <a href="{{AMAZON_URL}}">It's also on Amazon</a>.</p>
+      </div>
+      <form class="free-form" action="/book" method="post">
+        <div class="field-row">
+          <p class="field">
+            <label for="first_name">First name</label>
+            <input id="first_name" name="first_name" autocomplete="given-name" required maxlength="60">
+          </p>
+          <p class="field">
+            <label for="surname">Surname</label>
+            <input id="surname" name="surname" autocomplete="family-name" required maxlength="60">
+          </p>
+        </div>
+        <p class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required maxlength="254">
+        </p>
+        <p class="check">
+          <input id="email_ok" name="email_ok" type="checkbox" value="yes">
+          <label for="email_ok">Email me now and then about new chapters and books. Optional; you can ask me to stop at any time.</label>
+        </p>
+        <p class="trap" aria-hidden="true">
+          <label for="website">Leave this empty</label>
+          <input id="website" name="website" tabindex="-1" autocomplete="off">
+        </p>
+        <button class="button button-teal" type="submit">Download the book</button>
+        <p class="small">Your details aren't shared with anyone. <a href="/privacy">How they're used</a>.</p>
+      </form>
+    </div>
+  </section>
+
   <!-- Who it's for, and what you'll need: side by side -->
   <div class="pair-band">
     <div class="wrap pair">
@@ -509,6 +581,7 @@
           <p class="author-name">Chris Haworth</p>
           <p class="author-role">Product leader · Claude builder · Vibe coder</p>
           <p>I'm a product leader in SaaS and digital communications, specialising in personalisation and optimisation. I've been coding for years, and I love &lsquo;vibe coding&rsquo;: describing what you want to an AI and building it together. I build small projects with Claude to explore what AI can do and how it can make everyday life better. <cite>Building Scout</cite> shares what I've learned, in plain English.</p>
+          <p class="author-links"><a href="https://www.linkedin.com/in/chris-haworth-98605b27/" rel="me">Connect with Chris on LinkedIn</a></p>
         </div>
       </div>
     </div>
@@ -518,10 +591,13 @@
 
 <footer>
   <div class="wrap">
+    <p class="footer-title"><em>Building</em> <strong>Scout</strong></p>
     <ul class="footer-links">
-      <li><a href="{{AMAZON_URL}}">Buy the book on Amazon</a></li>
-      <li><a href="{{GITHUB_URL}}">Companion code on GitHub</a></li>
+      <li><a href="#free">Get the book free</a></li>
+      <li><a href="{{AMAZON_URL}}">Buy on Amazon</a></li>
       <li><a href="/demo">Live demo</a></li>
+      <li><a href="{{GITHUB_URL}}">Companion code on GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/chris-haworth-98605b27/" rel="me">Chris on LinkedIn</a></li>
       <li><a href="/privacy">Privacy</a></li>
     </ul>
     <p>This book is independent and is not affiliated with or endorsed by Anthropic. Claude is a trademark of Anthropic.</p>
