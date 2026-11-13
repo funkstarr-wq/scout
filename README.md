@@ -77,7 +77,7 @@ Then give the script your new manuscript. It accepts a `.doc` or `.docx` saved f
 ```bash
 python scripts/build_book.py ~/Downloads/Building-Scout.doc
 ```
-Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Building-Scout.epub`. If the cover changes, also replace `scout/static/site/cover.jpg`, which is the EPUB's cover and the website's. Prefer not to install LibreOffice? In Word, choose File → Save As → PDF and save over `book/Building-Scout.pdf`.
+Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Building-Scout.epub`. If the cover changes, also replace `scout/static/site/book-cover.jpg`, which is the EPUB's cover and the website's. Prefer not to install LibreOffice? In Word, choose File → Save As → PDF and save over `book/Building-Scout.pdf`.
 
 **While this repository is public**, anyone can download the book files (and the manuscript) straight from GitHub, without filling in the form. Make the repository private if the form matters to you.
 
@@ -112,4 +112,4 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 
 ### Before you go live
 
-Fill in the placeholders, written like `{{AMAZON_URL}}`, at the top of `scout/static/site/index.html` (website) and `scout/static/privacy.html` (privacy note). The privacy note's contact email matters: it's how readers ask to stop emails or have their details deleted. Use the web address from step 6 as `{{SITE_URL}}`. Replace `scout/static/site/cover.jpg` with your real cover. See `docs/website.md`.
+Fill in the placeholders, written like `{{AMAZON_URL}}`, at the top of `scout/static/site/index.html` (website) and `scout/static/privacy.html` (privacy note). The privacy note's contact email matters: it's how readers ask to stop emails or have their details deleted. Use the web address from step 6 as `{{SITE_URL}}`. The cover is `scout/static/site/book-cover.jpg`. See `docs/website.md`.

@@ -220,19 +220,18 @@ def home():
     return FileResponse(SITE / "index.html")
 
 
-@app.get("/cover.jpg")
-def cover():
-    return FileResponse(SITE / "cover.jpg")
+# The website's pictures. "no-cache" makes browsers check for a newer copy each time (a quick
+# "has it changed?" question), so a new cover or photo shows up straight away.
+SITE_IMAGES = {"book-cover.jpg": "book-cover.jpg", "cover.jpg": "book-cover.jpg",  # old address, same cover
+               "og-image.jpg": "og-image.jpg", "author.jpg": "author.jpg"}
 
 
-@app.get("/og-image.jpg")
-def og_image():
-    return FileResponse(SITE / "og-image.jpg")
-
-
-@app.get("/author.jpg")
-def author_photo():
-    return FileResponse(SITE / "author.jpg")
+@app.get("/{name}.jpg")
+def site_image(name: str):
+    filename = SITE_IMAGES.get(f"{name}.jpg")
+    if filename is None:
+        return FileResponse(STATIC / "not_found.html", status_code=404)
+    return FileResponse(SITE / filename, headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/demo", dependencies=[Depends(require_password)])

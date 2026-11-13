@@ -37,7 +37,11 @@ def test_website_is_at_the_front_door():
     page = client.get("/")
     assert page.status_code == 200
     assert "Building Scout" in page.text
-    assert client.get("/cover.jpg").headers["content-type"] == "image/jpeg"
+    cover = client.get("/book-cover.jpg")
+    assert cover.headers["content-type"] == "image/jpeg" and cover.headers["cache-control"] == "no-cache"
+    assert client.get("/cover.jpg").content == cover.content      # the old address shows the new cover
+    assert 'src="book-cover.jpg"' in page.text
+    assert client.get("/secret.jpg").status_code == 404
     assert client.get("/og-image.jpg").status_code == 200
     assert client.get("/author.jpg").headers["content-type"] == "image/jpeg"
 

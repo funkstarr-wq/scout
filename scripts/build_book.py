@@ -8,7 +8,7 @@ It doesn't call the Claude API and costs nothing. Commit the files it changes.
 
 The PDF keeps the design you made in Word: LibreOffice prints the manuscript exactly as laid out,
 with its cover page, title page, contents and running heads. The EPUB is made with pandoc and
-book/manuscript.lua, and uses scout/static/site/cover.jpg as its cover.
+book/manuscript.lua, and uses scout/static/site/book-cover.jpg as its cover.
 
 One-off setup:
   * LibreOffice, free from https://www.libreoffice.org (on a Mac: brew install --cask libreoffice)
@@ -30,7 +30,7 @@ import pypandoc
 ROOT = Path(__file__).resolve().parent.parent
 BOOK = ROOT / "book"
 MANUSCRIPT = ROOT / "Building-Scout.docx"
-COVER = ROOT / "scout" / "static" / "site" / "cover.jpg"
+COVER = ROOT / "scout" / "static" / "site" / "book-cover.jpg"
 FILTER = BOOK / "manuscript.lua"
 PDF = BOOK / "Building-Scout.pdf"
 EPUB = BOOK / "Building-Scout.epub"
