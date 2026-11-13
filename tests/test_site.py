@@ -37,7 +37,11 @@ def test_website_is_at_the_front_door():
     page = client.get("/")
     assert page.status_code == 200
     assert "Building Scout" in page.text
-    assert client.get("/cover.jpg").headers["content-type"] == "image/jpeg"
+    cover = client.get("/book-cover.jpg")
+    assert cover.headers["content-type"] == "image/jpeg" and cover.headers["cache-control"] == "no-cache"
+    assert client.get("/cover.jpg").content == cover.content      # the old address shows the new cover
+    assert 'src="book-cover.jpg"' in page.text
+    assert client.get("/secret.jpg").status_code == 404
     assert client.get("/og-image.jpg").status_code == 200
     assert client.get("/author.jpg").headers["content-type"] == "image/jpeg"
 
@@ -130,3 +134,13 @@ def test_make_examples_uses_the_demo_settings_and_asks_before_spending():
                             input="no\n", capture_output=True, text=True)
     assert "up to 3 researchers, 3 searches each, no rewrite" in result.stdout
     assert "Nothing was spent" in result.stdout
+
+
+def test_what_you_need_links_to_each_setup_step():
+    page = client.get("/").text
+    for url in ("https://code.claude.com/docs/en/setup#system-requirements", "https://claude.com/pricing",
+                "https://platform.claude.com/", "https://platform.claude.com/settings/billing",
+                "https://platform.claude.com/settings/keys", "https://github.com/signup",
+                "https://code.claude.com/docs/en/quickstart"):
+        assert f'href="{url}" target="_blank" rel="noopener"' in page, url
+    assert "Start now with the setup" in page

@@ -8,7 +8,7 @@ the tools that build them*. It's Stage 1 of [the website-and-demo brief](brief-w
 | File | What it is |
 |---|---|
 | `index.html` | The whole page: HTML, CSS and a small script for the animations, in one file, with no build step and no outside requests. |
-| `cover.jpg` | The book cover (800 × 1280), from the manuscript's cover page. It's also the EPUB's cover. |
+| `book-cover.jpg` | The book cover (800 × 1280), from the manuscript's cover page. It's also the EPUB's cover. If you change it, save the new one under a new name and update `index.html`, so no browser keeps showing an old copy. |
 | `og-image.jpg` | The picture shown when someone shares the link (1200 × 630), in the cover's style. |
 | `author.jpg` | Your photo for "About the author". Your name, bio and LinkedIn link are written into `index.html` itself. |
 
