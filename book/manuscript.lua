@@ -1,9 +1,23 @@
--- Pandoc filter used by scripts/build_book.py to turn the Word manuscript into the PDF and EPUB.
+-- Pandoc filter used by scripts/build_book.py to make the EPUB from the Word manuscript.
 --
--- 1. Paragraphs in the manuscript's "Code" style (commands and prompts the reader types)
---    become proper code blocks, keeping their line breaks.
--- 2. The manuscript's own title block (title, subtitle, author, date line) is removed,
---    because the book gets a real cover and title page instead.
+-- The manuscript is designed in Word with named paragraph styles. For the EPUB:
+--   * "Source Code" paragraphs become proper code blocks.
+--   * The cover page, the typed title block, the typed contents list and the decorative rules
+--     are dropped: the EPUB has its own cover, title page and contents.
+--   * Boxes and labels (exercises, checkpoints, part and chapter openers, the copyright page)
+--     keep their content, in a <div> named after the style, so epub.css can style them.
+
+local DROP = {
+  ["Cover Page"] = true, ["Book Title"] = true, ["Book Subtitle"] = true, ["Book Author"] = true,
+  ["Contents Title"] = true, ["TOC Entry"] = true, ["TOC Part"] = true,
+  ["Opener Rule"] = true, ["Section Rule"] = true, ["Review Rule"] = true, ["Part Spacer"] = true,
+}
+local PLAIN = { ["Body Text"] = true, ["First Paragraph"] = true, ["Normal"] = true, ["Captioned Figure"] = true,
+                ["Image Caption"] = true }
+
+local function slug(name)
+  return (name:lower():gsub("[^%w]+", "-"))
+end
 
 local function as_text(inlines)
   local out = {}
@@ -20,29 +34,40 @@ local function as_text(inlines)
 end
 
 function Span(span)
-  -- Words in the manuscript's "Code Char" style (file names, commands in a sentence).
-  if span.attributes["custom-style"] == "Code Char" then
-    return pandoc.Code(pandoc.utils.stringify(span))
+  local style = span.attributes["custom-style"]
+  if style == "Fig Num" then
+    return pandoc.Strong(span.content)
   end
-  if span.attributes["custom-style"] then
+  if style then
     return span.content
   end
 end
 
 function Div(div)
-  if div.attributes["custom-style"] == "Code" then
+  local style = div.attributes["custom-style"]
+  if not style then return nil end
+  if DROP[style] then return {} end
+  if style == "Source Code" then
     local lines = {}
     for _, block in ipairs(div.content) do
-      if block.t == "Para" or block.t == "Plain" then
-        lines[#lines + 1] = as_text(block.content)
-      end
+      if block.t == "Para" or block.t == "Plain" then lines[#lines + 1] = as_text(block.content) end
     end
     return pandoc.CodeBlock(table.concat(lines, "\n"))
   end
-  -- Other named styles (headings, list paragraphs) need no special treatment.
-  if div.attributes["custom-style"] then
-    return div.content
-  end
+  if PLAIN[style] then return div.content end
+  div.attributes["custom-style"] = nil
+  div.classes:insert(slug(style))
+  return div
+end
+
+function Figure(figure)
+  figure.attributes["custom-style"] = nil
+  return figure
+end
+
+function Table(table)
+  table.attributes["custom-style"] = nil
+  return table
 end
 
 function Pandoc(doc)
@@ -56,24 +81,6 @@ function Pandoc(doc)
       merged:insert(block)
     end
   end
-  -- Drop everything before the first chapter-level heading ("Before you begin").
-  local first = 1
-  for i, block in ipairs(merged) do
-    if block.t == "Header" and block.level == 2 then
-      first = i
-      break
-    end
-  end
-  local kept = pandoc.List()
-  for i = first, #merged do
-    kept:insert(merged[i])
-  end
-  doc.blocks = kept
+  doc.blocks = merged
   return doc
-end
-
-function Table(table)
-  -- Word's table style name isn't needed in the book.
-  table.attributes["custom-style"] = nil
-  return table
 end

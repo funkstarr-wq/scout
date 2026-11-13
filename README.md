@@ -69,15 +69,15 @@ The website's **Get the book free** form asks for a first name, surname and emai
 
 **To get your list of readers**, set `SCOUT_ADMIN_PASSWORD` (see the Railway table below) and open `https://<your site>/admin/signups.csv`. Sign in with the username `admin` and that password. It downloads as a spreadsheet. Only email the people marked "yes".
 
-**When the manuscript changes**, rebuild both editions from `Building-Scout.docx`. It's free and doesn't call Claude. One-off setup:
+**When the manuscript changes**, rebuild both editions. It's free and doesn't call Claude. The PDF keeps your Word design exactly (cover, title page, contents, running heads): LibreOffice prints it as laid out. The EPUB is made with pandoc. One-off setup: install LibreOffice from https://www.libreoffice.org (on a Mac, `brew install --cask libreoffice` also works), then:
 ```bash
-pip install -r requirements-book.txt && playwright install chromium
+pip install -r requirements-book.txt
 ```
-Then:
+Then give the script your new manuscript. It accepts a `.doc` or `.docx` saved from Word, stores it in the project as `Building-Scout.docx`, and rebuilds both editions:
 ```bash
-python scripts/build_book.py
+python scripts/build_book.py ~/Downloads/Building-Scout.doc
 ```
-Commit the new `book/Building-Scout.pdf` and `book/Building-Scout.epub`.
+Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Building-Scout.epub`. If the cover changes, also replace `scout/static/site/cover.jpg`, which is the EPUB's cover and the website's. Prefer not to install LibreOffice? In Word, choose File → Save As → PDF and save over `book/Building-Scout.pdf`.
 
 **While this repository is public**, anyone can download the book files (and the manuscript) straight from GitHub, without filling in the form. Make the repository private if the form matters to you.
 

@@ -7,15 +7,26 @@ the tools that build them*. It's Stage 1 of [the website-and-demo brief](brief-w
 
 | File | What it is |
 |---|---|
-| `index.html` | The whole page. The HTML and CSS are in one file, with no JavaScript, no build step and no outside requests. |
-| `cover.jpg` | A placeholder book cover (800 × 1200). Replace it with your real cover, keeping the 2:3 shape. |
-| `og-image.jpg` | The picture shown when someone shares the link (1200 × 630). Replace it once you have the real cover. |
+| `index.html` | The whole page: HTML, CSS and a small script for the animations, in one file, with no build step and no outside requests. |
+| `cover.jpg` | The book cover (800 × 1280), from the manuscript's cover page. It's also the EPUB's cover. |
+| `og-image.jpg` | The picture shown when someone shares the link (1200 × 630), in the cover's style. |
 | `author.jpg` | Your photo for "About the author". Your name, bio and LinkedIn link are written into `index.html` itself. |
 
-The design follows the book's cover: deep teal and cream, the cover's lettering in the hero, and its
-typeface, Charis SIL (a free version of Charter), which lives in `scout/static/fonts/` and is used by
-every page. If you replace the cover with a different design, the colours are at the top of the
-`<style>` block in `index.html` (`--teal` and `--cream`).
+The design follows the book's cover: clay, Scout blue and black, set in Outfit (the cover's style of
+lettering, free under the SIL Open Font Licence, in `scout/static/fonts/`, used by every page). The
+colours are at the top of the `<style>` block in `index.html` (`--clay`, `--blue`, `--blue-bright`,
+`--black`).
+
+Things that move, all drawn by the script at the bottom of `index.html`:
+
+- **The cover's robots** in the hero: they bob and blink, pulses run along their wires, and the big
+  blue robot's eyes follow the pointer.
+- **"Watch Scout think":** an animated walk-through of the three example questions, using Scout's own
+  progress messages. It's an illustration, so it never calls Claude and costs nothing.
+- **The topics ticker and the numbers** that count up.
+
+Visitors whose device asks for less motion (an accessibility setting) see everything still and
+finished, and the page reads the same without JavaScript.
 
 ## The free book
 

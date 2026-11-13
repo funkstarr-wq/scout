@@ -35,7 +35,7 @@ def test_website_offers_the_free_book_and_links_to_linkedin():
     for field in ('name="first_name"', 'name="surname"', 'name="email"', 'name="email_ok"'):
         assert field in page
     assert page.count(LINKEDIN) == 2  # about the author, and the footer
-    assert "Charis SIL" in page
+    assert "Outfit" in page
 
 
 def test_book_files_are_in_the_project():
@@ -179,11 +179,11 @@ def test_privacy_note_explains_the_book_form():
 
 # ------------------------------------------------------------------------ fonts
 def test_the_cover_font_is_served():
-    font = client.get("/fonts/charis-sil-latin-400-normal.woff2")
+    font = client.get("/fonts/outfit-latin-800-normal.woff2")
     assert font.status_code == 200
     assert font.headers["content-type"] == "font/woff2"
 
 
-@pytest.mark.parametrize("name", ["OFL.txt", "..%2F..%2Fconfig.py", "charis-sil-latin-900-normal.woff2"])
+@pytest.mark.parametrize("name", ["OFL.txt", "..%2F..%2Fconfig.py", "outfit-latin-900-normal.woff2", "charis-sil-latin-400-normal.woff2"])
 def test_only_the_font_files_are_served(name):
     assert client.get(f"/fonts/{name}").status_code == 404

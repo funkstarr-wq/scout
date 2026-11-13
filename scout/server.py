@@ -258,7 +258,7 @@ def privacy():
 
 
 # --------------------------------------------------------------- the free book
-FONT_FILE = re.compile(r"charis-sil-latin-(400|700)-(normal|italic)\.woff2")
+FONT_FILE = re.compile(r"outfit-latin-(400|500|700|800)-normal\.woff2")
 EDITIONS = {"pdf": ("Building-Scout.pdf", "application/pdf"), "epub": ("Building-Scout.epub", "application/epub+zip")}
 EMAIL = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
 LONGEST_FORM = 10_000  # bytes; the real form is a few hundred
