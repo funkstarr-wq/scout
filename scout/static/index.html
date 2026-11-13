@@ -27,44 +27,103 @@
     #report { border-top: 1px solid var(--line); padding-top: 8px; }
     #report a { color: var(--accent); }
     .error { color: #b3261e; font-family: system-ui, sans-serif; }
+    .notice { font-family: system-ui, sans-serif; }
     h2.small { font: 600 13px system-ui, sans-serif; text-transform: uppercase; letter-spacing: 1px;
                color: var(--muted); margin-top: 48px; }
     #history { padding-left: 18px; font-size: 15px; }
     #history a { color: inherit; }
+    [hidden] { display: none !important; }
+    .banner { margin: 0 0 20px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px;
+              font: 14px/1.5 system-ui, sans-serif; }
+    .banner small { display: block; color: var(--muted); }
+    .banner a, .back a, #examples a { color: var(--accent); }
+    .banner.fake { border-color: #b3261e; color: #b3261e; font-weight: 600; }
+    .back { margin: 0 0 16px; font: 14px system-ui, sans-serif; }
+    .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .count { font: 13px system-ui, sans-serif; color: var(--muted); }
+    #examples { font: 15px/1.5 system-ui, sans-serif; }
+    #examples ul { padding-left: 18px; }
   </style>
 </head>
 <body>
 <main>
+  <p class="back" id="back" hidden><a href="/">← About the book</a></p>
+  <p class="banner" id="demo-banner" hidden>
+    <strong>Live demo. Limited questions per day. Questions are stored.</strong>
+    <small>Please don't include personal details. <a href="/privacy">What's stored and why</a></small>
+  </p>
+  <p class="banner fake" id="fake-banner" hidden>
+    FAKE ANSWERS: Scout is running with a pretend Claude (SCOUT_FAKE=1). Nothing on this page is real research.
+  </p>
   <h1>Scout</h1>
   <p class="lede">Ask a question. A team of research agents will search the web and write you a cited answer.</p>
 
   <form id="ask">
     <textarea id="question" placeholder="For example: How do heat pumps compare with gas boilers on running costs in the UK?" required></textarea>
-    <button id="go" type="submit">Research it</button>
+    <div class="row">
+      <button id="go" type="submit">Research it</button>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
   </form>
 
   <ul id="progress"></ul>
   <article id="report"></article>
+  <div id="examples" hidden>
+    <p>Finished reports you can read now:</p>
+    <ul id="example-links"></ul>
+  </div>
 
-  <h2 class="small">Recent questions</h2>
+  <h2 class="small" id="history-title">Recent questions</h2>
   <ol id="history"></ol>
 </main>
 
 <script>
   const $ = (id) => document.getElementById(id);
   let timer = null;
+  let settings = { demo: false, fake: false, max_chars: 500, examples: [] };
+
+  function updateCount() {
+    const used = $("question").value.trim().length;
+    $("count").textContent = `${used} / ${settings.max_chars}`;
+  }
+
+  function showExamples(visible) {
+    $("example-links").innerHTML = settings.examples.map((e) =>
+      `<li><a href="/examples/${e.name}">${e.question.replace(/</g, "&lt;")}</a></li>`).join("");
+    $("examples").hidden = !visible;
+  }
+
+  async function loadSettings() {
+    try { settings = await api("/api/settings"); } catch (err) { /* keep the defaults */ }
+    $("demo-banner").hidden = !settings.demo;
+    $("back").hidden = !settings.demo;
+    $("fake-banner").hidden = !settings.fake;
+    $("question").maxLength = settings.max_chars;
+    if (settings.demo) $("history-title").textContent = "Your recent questions";
+    updateCount();
+  }
 
   async function api(path, options) {
     const res = await fetch(path, options);
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`);
+    if (!res.ok) {
+      const error = new Error(typeof data.detail === "string" ? data.detail : `Request failed (${res.status})`);
+      error.status = res.status;
+      throw error;
+    }
     return data;
+  }
+
+  // Reports are written in Markdown. If the formatting library couldn't load, show plain text instead.
+  function renderMarkdown(text) {
+    if (window.marked && window.DOMPurify) return DOMPurify.sanitize(marked.parse(text));
+    return `<pre style="white-space: pre-wrap; font: inherit">${text.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</pre>`;
   }
 
   function show(job) {
     $("progress").innerHTML = job.progress.map((p) => `<li>${p.replace(/</g, "&lt;")}</li>`).join("");
     if (job.status === "done") {
-      $("report").innerHTML = DOMPurify.sanitize(marked.parse(job.report));
+      $("report").innerHTML = renderMarkdown(job.report);
     } else if (job.status === "failed") {
       $("report").innerHTML = `<p class="error">Something went wrong: ${job.error.replace(/</g, "&lt;")}</p>`;
     } else {
@@ -75,7 +134,15 @@
   async function follow(id) {
     clearInterval(timer);
     const tick = async () => {
-      const job = await api(`/api/research/${id}`);
+      let job;
+      try {
+        job = await api(`/api/research/${id}`);
+      } catch (err) {  // e.g. a link to someone else's question: say so instead of freezing
+        clearInterval(timer);
+        $("report").innerHTML = `<p class="error">${err.message.replace(/</g, "&lt;")}</p>`;
+        $("go").disabled = false;
+        return;
+      }
       show(job);
       if (job.status !== "running") {
         clearInterval(timer);
@@ -97,6 +164,7 @@
     event.preventDefault();
     $("go").disabled = true;
     $("progress").innerHTML = "";
+    showExamples(false);
     try {
       const { id } = await api("/api/research", {
         method: "POST",
@@ -105,12 +173,16 @@
       });
       location.hash = id;
     } catch (err) {
-      $("report").innerHTML = `<p class="error">${err.message}</p>`;
+      const friendly = err.status === 429 || err.status === 503;  // a limit, not a fault
+      $("report").innerHTML = `<p class="${friendly ? "notice" : "error"}">${err.message.replace(/</g, "&lt;")}</p>`;
+      if (err.status === 429 && settings.demo) showExamples(true);
       $("go").disabled = false;
     }
   });
 
+  $("question").addEventListener("input", updateCount);
   window.addEventListener("hashchange", () => location.hash && follow(location.hash.slice(1)));
+  loadSettings();
   if (location.hash) follow(location.hash.slice(1));
   loadHistory();
 </script>

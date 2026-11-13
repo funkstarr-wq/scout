@@ -1,0 +1,67 @@
+<!doctype html>
+<!--
+  PLACEHOLDERS: replace these with your editor's "Replace All", as on the website.
+    {{AUTHOR}}          Your name
+    {{CONTACT_EMAIL}}   An email address people can write to about their data
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy · Building Scout</title>
+  <style>
+    :root { --ink: #1d1d1b; --muted: #6b6b66; --line: #e2e0d8; --paper: #fbfaf6; --accent: #2f5d50; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #ecebe6; --muted: #a3a29b; --line: #34332f; --paper: #191917; --accent: #7fb8a4; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink);
+           font: 17px/1.65 Georgia, "Iowan Old Style", serif; }
+    main { max-width: 680px; margin: 0 auto; padding: 32px 16px 80px; }
+    a { color: var(--accent); }
+    .back { margin: 0 0 24px; font: 14px system-ui, sans-serif; }
+    h1 { font-size: 32px; line-height: 1.2; margin: 0 0 8px; }
+    h2 { font-size: 21px; margin: 32px 0 8px; }
+    .lede { color: var(--muted); margin: 0 0 8px; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+<main>
+  <p class="back"><a href="/">← About the book</a></p>
+  <h1>Privacy</h1>
+  <p class="lede">This page explains what the live demo of Scout stores, why, and for how long.
+  The rest of this website stores nothing about you.</p>
+
+  <h2>What the demo stores</h2>
+  <ul>
+    <li><strong>Your question and Scout's report</strong>, so you can read the report and see it in your history.</li>
+    <li><strong>A one-way code made from your internet address, today's date and a secret key.</strong> It is used
+      only to count how many questions each visitor asks per day. Only someone with the secret key could work out
+      which address made it, and it is wiped once the day is over. Your internet address itself is never stored.</li>
+    <li><strong>One cookie</strong> holding a random ID, so the demo can show you your own questions and nobody else's.
+      There are no other cookies, no analytics and no tracking.</li>
+  </ul>
+
+  <h2>Who can see it</h2>
+  <p>Only you can see your questions and reports on the demo. The author, who runs the demo, can see the
+  stored questions and reports.</p>
+
+  <h2>Who else is involved</h2>
+  <p>To answer your question, Scout sends it to Anthropic's Claude API, and Scout's researchers search the web.
+  The demo is hosted on Railway, which keeps standard access logs, including internet addresses,
+  as almost all web hosts do.</p>
+
+  <h2>How long it's kept</h2>
+  <p>Questions and reports are deleted automatically after 30 days. The daily codes are wiped the day after
+  they are made. The cookie expires 30 days after your last visit.</p>
+
+  <h2>Please don't include personal details</h2>
+  <p>The demo is for trying Scout out. Don't type anything into it that you wouldn't want stored.</p>
+
+  <h2>Questions</h2>
+  <p>The demo is run by {{AUTHOR}}. To ask about your data, or to have it deleted sooner,
+  email {{CONTACT_EMAIL}}.</p>
+</main>
+</body>
+</html>

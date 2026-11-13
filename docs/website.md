@@ -24,15 +24,11 @@ with your editor's "Replace All":
 
 ## Preview it on your computer
 
-In a terminal, from the project folder:
+Run Scout (see the README) and open http://127.0.0.1:8000. The website is served at `/`, and its
+links go to the live demo (`/demo`), the three example reports (`/examples/...`) and the privacy
+note (`/privacy`). The example pages say "coming soon" until you run `scripts/make_examples.py`.
 
-```bash
-cd scout/static/site
-python3 -m http.server 8000
-```
+## The privacy note
 
-Then open http://localhost:8000.
-
-Some links won't work yet, because Stage 2 of the brief builds the pages they point
-to: **Try the live demo** (`/demo`), the three example reports (`/examples/...`) and
-**Privacy** (`/privacy`).
+`scout/static/privacy.html` has two placeholders of its own, listed at the top of the file:
+`{{AUTHOR}}` and `{{CONTACT_EMAIL}}`. Fill them in the same way.
