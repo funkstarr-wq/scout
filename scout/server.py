@@ -169,6 +169,8 @@ REFUSALS = {
     "daily": (429, "The demo has answered all the questions it can afford today. It resets overnight. "
                    "Meanwhile, here are three finished reports."),
     "busy": (503, "Scout is busy with someone else's question. Please try again in a minute."),
+    "budget": (429, "The demo has used up this month's research budget, so it's resting until the 1st. "
+                    "Meanwhile, here are three finished reports."),
 }
 NO_COOKIE = ("Scout needs a cookie to show you your report. Please allow cookies for this site, "
              "reload the page and try again.")
@@ -337,9 +339,8 @@ def download_book(token: str, edition: str):
     return FileResponse(path, media_type=media_type, filename=filename, headers={"Cache-Control": "private, no-store"})
 
 
-@app.get("/admin/signups.csv")
-def signups_csv(credentials: HTTPBasicCredentials | None = Depends(basic)):
-    """The readers who asked for the book, as a spreadsheet. Username: admin."""
+def require_admin(credentials: HTTPBasicCredentials | None = Depends(basic)):
+    """The owner's pages. Username: admin, password: SCOUT_ADMIN_PASSWORD. Without one, they don't exist."""
     if not config.ADMIN_PASSWORD:
         raise HTTPException(404)
     ok = credentials is not None and secrets.compare_digest(
@@ -348,6 +349,20 @@ def signups_csv(credentials: HTTPBasicCredentials | None = Depends(basic)):
     )
     if not ok:
         raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="Building Scout admin"'})
+
+
+@app.get("/admin/spend", dependencies=[Depends(require_admin)])
+def demo_spend():
+    """What the live demo has spent on the Claude API this month, against its budget."""
+    spent = store.spend_this_month()
+    return {"month": store.this_month(), "spent_usd": round(spent, 4),
+            "budget_usd": config.MONTHLY_BUDGET_USD,
+            "accepting_questions": spent + config.QUESTION_RESERVE_USD <= config.MONTHLY_BUDGET_USD}
+
+
+@app.get("/admin/signups.csv", dependencies=[Depends(require_admin)])
+def signups_csv():
+    """The readers who asked for the book, as a spreadsheet. Username: admin."""
     out = io.StringIO()
     sheet = csv.writer(out)
     sheet.writerow(["First name", "Surname", "Email", "Happy to get emails", "First asked", "Last asked", "Downloads"])
@@ -401,6 +416,9 @@ def start_research(body: Question, background: BackgroundTasks, request: Request
     if vid is None:
         raise HTTPException(400, NO_COOKIE)
     tidy_demo_data()
+    # Stop before the month's budget: keep enough headroom for the question to finish.
+    if store.spend_this_month() + config.QUESTION_RESERVE_USD > config.MONTHLY_BUDGET_USD:
+        raise refusal("budget")
     got_slot = slots.try_take()
     try:
         job_id, reason = store.try_create_job(

@@ -42,7 +42,8 @@ Open http://127.0.0.1:8000/demo and ask a question twice. The third time, you're
 Every demo question costs you roughly 25 US cents (about 20p), which is an estimate. When `DEMO_MODE=1`:
 
 - **Each visitor** can ask 2 questions a day (`SCOUT_PER_VISITOR_LIMIT`). Visitors are told apart by internet address. Every address in a home's IPv6 block counts as one visitor.
-- **Everyone together** can ask `SCOUT_DAILY_LIMIT` questions a day. This is the real budget control.
+- **A monthly budget:** Scout adds up what every Claude reply actually costs (tokens and web searches, at Anthropic's published prices) and stops taking questions before the month's total reaches `SCOUT_MONTHLY_BUDGET_USD` ($10 by default). Visitors are told it's resting until the 1st and offered the example reports. See this month's spend at `/admin/spend` (username `admin`).
+- **Everyone together** can ask `SCOUT_DAILY_LIMIT` questions a day, which spreads the budget across the month.
 - **Only one question runs at a time.** Anyone else is asked to try again in a minute, and that doesn't use up their question.
 - **Questions must be 10 to 300 characters.**
 - **Scout works with less effort:** 3 researchers, 3 web searches each, and no rewrite after the fact-check.
@@ -83,7 +84,7 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 
 ## Deploying the demo on Railway
 
-1. **Make a separate API key for the demo.** In the Claude Console, create a workspace just for the demo (for example "Scout demo"), set a **monthly spend limit** on it of $25, which is about £20, and create an API key in that workspace. Then a busy day, a bug or a leaked key can never cost more than that, and you can revoke the demo key without breaking your own work.
+1. **Make a separate API key for the demo.** In the Claude Console, create a workspace just for the demo (for example "Scout demo"), set a **monthly spend limit** on it of $10 (the same as `SCOUT_MONTHLY_BUDGET_USD`), and create an API key in that workspace. Then a busy day, a bug or a leaked key can never cost more than that, and you can revoke the demo key without breaking your own work.
 2. **Create the service.** In Railway, start a new project from this GitHub repository. Railway reads the `Procfile` to start Scout.
 3. **Add a volume** to the service (right-click the service → Attach volume), mounted at `/data`. This keeps the database when Railway redeploys.
 4. **Set the variables** in the service's Variables tab:
@@ -97,7 +98,8 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
    | `SCOUT_MAX_CONCURRENT` | `1` |
    | `SCOUT_IP_SALT` | A long random string. Make one with the command below this table. |
    | `SCOUT_DB` | `/data/scout.db`. This is required: without it, the daily counts would start again every time Scout restarts, and your list of readers would be lost. |
-   | `SCOUT_ADMIN_PASSWORD` | A long password of your own, for downloading your list of readers from `/admin/signups.csv`. |
+   | `SCOUT_ADMIN_PASSWORD` | A long password of your own, for downloading your list of readers from `/admin/signups.csv` and seeing the demo's spend at `/admin/spend`. |
+   | `SCOUT_MONTHLY_BUDGET_USD` | `10`. The demo stops taking questions before it spends this much in a month. |
 
    To make the salt, run this and paste the result into Railway:
    ```bash
@@ -108,7 +110,7 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 5. **Keep it to one replica** (Settings → Deploy). The limits are counted in one process and one database file, so a second copy would double them.
 6. **Get a web address** (Settings → Networking → Generate Domain).
 
-**Worst-case cost** is roughly `SCOUT_DAILY_LIMIT` × 35 US cents a day. That is an estimate, so check the real figure in the Claude Console after the first few days. The Console spend limit from step 1 is the only hard ceiling, so keep it at or below your budget.
+**Cost:** the demo stops itself before `SCOUT_MONTHLY_BUDGET_USD` (it keeps 50 cents of headroom so the last question can finish). Each question costs roughly 25 to 35 US cents, so $10 is about 30 questions a month. Keep the Console spend limit from step 1 at the same figure: it's Anthropic's own hard stop, and catches anything Scout's own count might miss.
 
 ### Before you go live
 

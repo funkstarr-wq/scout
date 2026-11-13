@@ -18,6 +18,20 @@ def _switch(name: str) -> bool:
     raise RuntimeError(f"{name} must be 1 (on) or 0 (off). It is set to {raw!r}.")
 
 
+def _dollars(name: str, default: float) -> float:
+    """Read an amount of money in US dollars, like 10 or 12.50. A typo stops Scout starting."""
+    raw = os.getenv(name, "").strip().lstrip("$")
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        raise RuntimeError(f"{name} must be an amount in US dollars, like 10. It is set to {raw!r}.") from None
+    if value < 0:
+        raise RuntimeError(f"{name} can't be negative. It is set to {value}.")
+    return value
+
+
 def _whole_number(name: str, default: int, smallest: int = 0) -> int:
     """Read a whole-number setting. A typo stops Scout starting rather than meaning 'no limit'."""
     raw = os.getenv(name, "").strip()
@@ -68,6 +82,11 @@ API_TIMEOUT_SECONDS = 120         # longest the demo waits for any single reply 
 API_MAX_RETRIES = 1               # the demo tries a failed reply once more at most (each try is billed)
 KEEP_DEMO_DAYS = 30               # demo questions and reports are deleted after this many days
 IP_SALT = os.getenv("SCOUT_IP_SALT", "")  # secret mixed into visitor fingerprints
+# The most the demo may spend on the Claude API in a calendar month (UTC), in US dollars.
+# Scout adds up what each reply actually costs (see spend.py) and stops taking questions
+# before this is reached. Set the same limit in the Claude Console as the hard stop.
+MONTHLY_BUDGET_USD = _dollars("SCOUT_MONTHLY_BUDGET_USD", 10.0)
+QUESTION_RESERVE_USD = 0.50       # headroom for one more question: the demo stops this far below the budget
 
 # The free book. Readers fill in a short form, then get download links that work for a week.
 BOOK_DIR = PROJECT_ROOT / "book"          # Building-Scout.pdf and Building-Scout.epub live here
