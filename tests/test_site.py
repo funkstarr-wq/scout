@@ -39,6 +39,7 @@ def test_website_is_at_the_front_door():
     assert "Building Scout" in page.text
     assert client.get("/cover.jpg").headers["content-type"] == "image/jpeg"
     assert client.get("/og-image.jpg").status_code == 200
+    assert client.get("/author.jpg").headers["content-type"] == "image/jpeg"
 
 
 def test_scout_page_has_moved_to_demo_and_carries_the_banner():
