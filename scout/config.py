@@ -53,16 +53,21 @@ DEMO_MODE = _switch("DEMO_MODE")
 FAKE_MODE = _switch("SCOUT_FAKE")
 
 # The lead model plans, writes and reviews. The worker model does the searching.
-LEAD_MODEL = os.getenv("SCOUT_LEAD_MODEL", "claude-sonnet-5-5")
-WORKER_MODEL = os.getenv("SCOUT_WORKER_MODEL", "claude-haiku-5-5")
+# The live demo uses the cheaper Haiku for both, because every question costs the owner money:
+# per word, Haiku costs about a twentieth of Sonnet.
+# A blank setting counts as "not set", so an empty Railway variable can't leave Scout without a model.
+LEAD_MODEL = os.getenv("SCOUT_LEAD_MODEL") or ("claude-haiku-5-5" if DEMO_MODE else "claude-sonnet-5-5")
+WORKER_MODEL = os.getenv("SCOUT_WORKER_MODEL") or "claude-haiku-5-5"
 
 # Effort limits. These keep a single question from running up a large bill.
-# The live demo uses smaller ones, because every question costs the owner money.
+# The live demo uses smaller ones. Web searches are its biggest cost ($0.01 each), and every
+# extra researcher turn means re-reading the search results gathered so far.
 MAX_SUBTASKS = 3 if DEMO_MODE else 5          # most researchers the planner may start
-MAX_RESEARCH_TURNS = 8                         # most back-and-forth turns for one researcher
-MAX_SEARCHES_PER_RESEARCHER = 3 if DEMO_MODE else 5
+MAX_RESEARCH_TURNS = 4 if DEMO_MODE else 8     # most back-and-forth turns for one researcher
+MAX_SEARCHES_PER_RESEARCHER = 2 if DEMO_MODE else 5
 MAX_FINDINGS_PER_RESEARCHER = 8
 MAX_REVISIONS = 0 if DEMO_MODE else 1          # how many times the writer may redo a rejected report
+WRITER_MAX_TOKENS = 3000 if DEMO_MODE else 6000  # longest report the writer may produce
 
 DB_PATH = os.getenv("SCOUT_DB", str(PROJECT_ROOT / "scout.db"))
 DB_PATH_IS_SET = bool(os.getenv("SCOUT_DB", "").strip())

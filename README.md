@@ -39,14 +39,14 @@ Open http://127.0.0.1:8000/demo and ask a question twice. The third time, you're
 
 ## How the live demo protects your money
 
-Every demo question costs you roughly 25 US cents (about 20p), which is an estimate. When `DEMO_MODE=1`:
+Every demo question costs you roughly 7 to 12 US cents (about 6 to 10p), which is an estimate; `/admin/spend` shows the real figure. When `DEMO_MODE=1`:
 
 - **Each visitor** can ask 2 questions a day (`SCOUT_PER_VISITOR_LIMIT`). Visitors are told apart by internet address. Every address in a home's IPv6 block counts as one visitor.
 - **A monthly budget:** Scout adds up what every Claude reply actually costs (tokens and web searches, at Anthropic's published prices) and stops taking questions before the month's total reaches `SCOUT_MONTHLY_BUDGET_USD` ($10 by default). Visitors are told it's resting until the 1st and offered the example reports. See this month's spend at `/admin/spend` (username `admin`).
 - **Everyone together** can ask `SCOUT_DAILY_LIMIT` questions a day, which spreads the budget across the month.
 - **Only one question runs at a time.** Anyone else is asked to try again in a minute, and that doesn't use up their question.
 - **Questions must be 10 to 300 characters.**
-- **Scout works with less effort:** 3 researchers, 3 web searches each, and no rewrite after the fact-check.
+- **Scout works with less effort, using the cheaper model:** Claude Haiku does every job (the planner, researchers, writer and fact-checker), with 3 researchers, 2 web searches and 4 turns each, a shorter report, and no rewrite after the fact-check. Outside the demo, Scout uses Claude Sonnet for planning, writing and checking, and searches more.
 - **The researchers stop after 90 seconds.** If a question has taken over 3 minutes by the time its report is written, the final fact-check is skipped. A slow reply from Claude is retried once at most.
 - **Visitors need cookies switched on.** A visitor whose browser blocks them is told so before their question counts.
 - **The limits reset at midnight UTC.**
@@ -56,7 +56,7 @@ Visitors are told about the limits in plain words. When a limit is reached, the 
 
 **Privacy:** visitors are counted by a one-way code made from their internet address, the date and the secret salt. The code is wiped once its day is over, and raw addresses are never stored. Each visitor sees only their own questions. Questions and reports are deleted after 30 days. The details are at `/privacy`.
 
-## Make the example reports (about 75 US cents, once)
+## Make the example reports (about 30 US cents, once)
 
 ```bash
 python scripts/make_examples.py
@@ -93,8 +93,8 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
    |---|---|
    | `ANTHROPIC_API_KEY` | The demo key from step 1 |
    | `DEMO_MODE` | `1` |
-   | `SCOUT_DAILY_LIMIT` | `2`. That's about £17 a month at worst, inside a £20 budget. |
-   | `SCOUT_PER_VISITOR_LIMIT` | `1` is recommended at this budget, so two different people can try it each day. The default is `2`, which would let the first visitor use the whole day's questions. |
+   | `SCOUT_DAILY_LIMIT` | `3`. At about 10 cents a question that's around $9 a month at worst, and the $10 monthly budget stops it anyway. |
+   | `SCOUT_PER_VISITOR_LIMIT` | `1` is recommended, so each person gets one question a day and three different people can try it. The default is `2`. |
    | `SCOUT_MAX_CONCURRENT` | `1` |
    | `SCOUT_IP_SALT` | A long random string. Make one with the command below this table. |
    | `SCOUT_DB` | `/data/scout.db`. This is required: without it, the daily counts would start again every time Scout restarts, and your list of readers would be lost. |
@@ -110,7 +110,7 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 5. **Keep it to one replica** (Settings → Deploy). The limits are counted in one process and one database file, so a second copy would double them.
 6. **Get a web address** (Settings → Networking → Generate Domain).
 
-**Cost:** the demo stops itself before `SCOUT_MONTHLY_BUDGET_USD` (it keeps 50 cents of headroom so the last question can finish). Each question costs roughly 25 to 35 US cents, so $10 is about 30 questions a month. Keep the Console spend limit from step 1 at the same figure: it's Anthropic's own hard stop, and catches anything Scout's own count might miss.
+**Cost:** the demo stops itself before `SCOUT_MONTHLY_BUDGET_USD` (it keeps 50 cents of headroom so the last question can finish). Each question costs roughly 7 to 12 US cents, so $10 is about 100 questions a month. Keep the Console spend limit from step 1 at the same figure: it's Anthropic's own hard stop, and catches anything Scout's own count might miss.
 
 ### Before you go live
 

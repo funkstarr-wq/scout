@@ -137,7 +137,7 @@ def write_report(question: str, findings: list[dict], feedback: list[str] | None
 
     response = llm.client().messages.create(
         model=config.LEAD_MODEL,
-        max_tokens=6000,
+        max_tokens=config.WRITER_MAX_TOKENS,
         system=load_prompt("writer"),
         messages=[{"role": "user", "content": content}],
     )

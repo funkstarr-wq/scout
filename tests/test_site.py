@@ -132,7 +132,7 @@ def test_make_examples_uses_the_demo_settings_and_asks_before_spending():
     env = {**os.environ, "DEMO_MODE": "0", "SCOUT_FAKE": "0"}  # the script must switch the demo on itself
     result = subprocess.run([sys.executable, "scripts/make_examples.py"], cwd=ROOT, env=env,
                             input="no\n", capture_output=True, text=True)
-    assert "up to 3 researchers, 3 searches each, no rewrite" in result.stdout
+    assert "up to 3 researchers, 2 searches each, no rewrite, using claude-haiku-5-5" in result.stdout
     assert "Nothing was spent" in result.stdout
 
 

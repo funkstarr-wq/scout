@@ -1,7 +1,7 @@
 """Make the three example reports for the website.
 
-THIS CALLS THE REAL CLAUDE API AND COSTS MONEY: roughly 25 US cents per report,
-so about 75 cents for all three. It asks before it spends anything.
+THIS CALLS THE REAL CLAUDE API AND COSTS MONEY: roughly 10 US cents per report,
+so about 30 cents for all three. It asks before it spends anything.
 
 Run it from the project folder, with the virtual environment active:
 
@@ -30,7 +30,7 @@ sys.path.insert(0, str(ROOT))  # make "import scout" work from any folder
 from scout import config, examples  # noqa: E402
 from scout.graph import run_research  # noqa: E402
 
-CENTS_PER_REPORT = 25  # a rough estimate; the Claude Console shows the real figure
+CENTS_PER_REPORT = 10  # a rough estimate with the demo settings; /admin/spend and the Console show real figures
 
 
 def make_one(name: str, out_dir: Path) -> Path:
@@ -84,7 +84,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"This researches {len(names)} question(s) with the real Claude API, using the live demo's settings:")
     rewrites = "no rewrite" if config.MAX_REVISIONS == 0 else f"up to {config.MAX_REVISIONS} rewrite(s)"
-    print(f"up to {config.MAX_SUBTASKS} researchers, {config.MAX_SEARCHES_PER_RESEARCHER} searches each, {rewrites}.")
+    print(f"up to {config.MAX_SUBTASKS} researchers, {config.MAX_SEARCHES_PER_RESEARCHER} searches each, {rewrites}, "
+          f"using {config.LEAD_MODEL} and {config.WORKER_MODEL}.")
     print(f"It will cost roughly {len(names) * CENTS_PER_REPORT} US cents and take a few minutes.")
     if not args.yes and input("Type yes to go ahead: ").strip().lower() != "yes":
         print("Stopped. Nothing was spent.")
