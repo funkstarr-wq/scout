@@ -19,8 +19,6 @@ colours are at the top of the `<style>` block in `index.html` (`--clay`, `--blue
 
 Things that move, all drawn by the script at the bottom of `index.html`:
 
-- **The background of every coloured band:** the book's branching lines grow, split into agents, and
-  send dots along the branches. Clicking empty space in the hero sends out more.
 - **The cover's robots** in the hero: they bob and blink, pulses run along their wires, and the big
   blue robot's eyes follow the pointer.
 - **"Watch Scout think":** an animated walk-through of the three example questions, using Scout's own

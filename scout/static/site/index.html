@@ -16,7 +16,7 @@
 
   The design follows the book's cover: clay #da7757, Scout blue #1f3fa6,
   robot blue #2e5bd8 and black #141414, set in Outfit (../fonts/, SIL Open
-  Font Licence). The moving backgrounds and robots are drawn by the script at
+  Font Licence). The robots and the walk-through are animated by the script at
   the bottom; visitors who ask their device for less motion see them still.
   ============================================================================
 -->
@@ -53,8 +53,8 @@
   @font-face { font-family: "Outfit"; font-weight: 700; font-display: swap; src: url("fonts/outfit-latin-700-normal.woff2") format("woff2"); }
   @font-face { font-family: "Outfit"; font-weight: 800; font-display: swap; src: url("fonts/outfit-latin-800-normal.woff2") format("woff2"); }
 
-  /* Layout: coloured bands straight off the cover (clay, black, Scout blue), each with live agents
-     drawn behind it, alternating with calm paper sections for reading. */
+  /* Layout: coloured bands straight off the cover (clay, black, Scout blue), alternating with
+     calm paper sections for reading. */
   :root {
     --clay: #da7757;        /* the cover */
     --clay-deep: #c15f3c;   /* the book's labels */
@@ -122,7 +122,6 @@
   .band-blue { background: var(--blue); color: var(--white); }
   .band-blue a:not(.btn) { color: var(--white); }
   .band-alt { background: var(--paper-alt); }
-  canvas.field { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
   /* Buttons */
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 3.1rem;
@@ -159,7 +158,6 @@
   .tagline { font-size: 1.2rem; max-width: 30rem; margin-bottom: 2rem; }
   .actions { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; }
   .hero-note { margin: 1.2rem 0 0; font-size: 0.98rem; }
-  .hint { margin: 0.8rem 0 0; font-size: 0.85rem; opacity: 0.85; }
   @media (max-width: 26rem) { .actions .btn { flex: 1 1 100%; } }
   .robots { display: block; width: 100%; max-width: 36rem; margin: 0 auto; overflow: visible; }
   .robots .wire { fill: none; stroke: var(--black); stroke-width: 9; stroke-linecap: round; }
@@ -392,7 +390,6 @@
 
   <!-- Hero: the cover, come to life -->
   <section class="hero band-clay" id="hero" aria-labelledby="title">
-    <canvas class="field" data-field="clay" aria-hidden="true"></canvas>
     <div class="wrap hero-grid">
       <div>
         <p class="kicker">AI agents · by Christopher Haworth</p>
@@ -404,7 +401,6 @@
           <a class="btn btn-white" href="#how">Watch Scout think</a>
         </div>
         <p class="hero-note">Free as a PDF or EPUB. Or <a href="/demo">try the live demo</a>, or <a href="{{AMAZON_URL}}">buy it on Amazon</a>.</p>
-        <p class="hint" data-motion-only hidden>Tip: click the background to send out more agents.</p>
       </div>
 
       <svg class="robots" viewBox="0 0 620 560" role="img" aria-labelledby="robots-title">
@@ -508,7 +504,6 @@
 
   <!-- Watch Scout think: an animated walk-through, no AI involved -->
   <section class="band-night" id="how" aria-labelledby="how-title">
-    <canvas class="field" data-field="night" aria-hidden="true"></canvas>
     <div class="wrap">
       <p class="kicker">How it works</p>
       <h2 id="how-title">Watch Scout think</h2>
@@ -588,7 +583,6 @@
 
   <!-- The numbers -->
   <section class="band-clay numbers" aria-label="The book in numbers">
-    <canvas class="field" data-field="clay" aria-hidden="true"></canvas>
     <div class="wrap">
       <ul class="num-grid">
         <li><b data-count="15">15</b><span>chapters, each one adding a working piece</span></li>
@@ -630,7 +624,6 @@
 
   <!-- Get the book free -->
   <section class="band-blue" id="free" aria-labelledby="free-title">
-    <canvas class="field" data-field="blue" aria-hidden="true"></canvas>
     <div class="wrap free-grid">
       <div>
         <img class="free-cover" src="cover.jpg" width="400" height="640"
@@ -764,122 +757,6 @@
 (() => {
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-
-  /* ---------- Agents growing in the background ----------
-     Each "tree" is the book's motif: a line comes in, hits a node, and branches out to
-     two or three ends. Dots travel along the branches; now and then an end is a blue target. */
-  const THEMES = {
-    clay:  { line: "#141414", node: "#ffffff", dot: "#ffffff", target: "#2e5bd8", alpha: 0.2 },
-    night: { line: "#da7757", node: "#141414", dot: "#ffffff", target: "#2e5bd8", alpha: 0.2 },
-    blue:  { line: "#ffffff", node: "#1f3fa6", dot: "#ffffff", target: "#da7757", alpha: 0.16 },
-  };
-  const bez = (t, a, b, c, d) => { const u = 1 - t; return u*u*u*a + 3*u*u*t*b + 3*u*t*t*c + t*t*t*d; };
-
-  function field(canvas) {
-    const theme = THEMES[canvas.dataset.field] || THEMES.clay;
-    const ctx = canvas.getContext("2d");
-    let w = 0, h = 0, trees = [], visible = false, raf = 0, lastSpawn = 0;
-
-    function resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const box = canvas.getBoundingClientRect();
-      w = box.width; h = box.height;
-      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    const wanted = () => Math.max(3, Math.min(9, Math.round((w * h) / 150000)));
-
-    function tree(x, y, now, grown) {
-      const s = Math.max(0.65, Math.min(1.25, w / 1200));
-      const len = (170 + Math.random() * 260) * s;
-      const n = Math.random() < 0.55 ? 3 : 2;
-      const branches = [];
-      for (let i = 0; i < n; i++) {
-        const spread = (i - (n - 1) / 2) * (95 + Math.random() * 70) * s;
-        const ey = y + spread + (Math.random() - 0.5) * 40 * s;
-        branches.push({ c1x: x + len * 0.45, c1y: y, c2x: x + len * 0.55, c2y: ey, ex: x + len, ey,
-                        r: (7 + Math.random() * 10) * s, target: Math.random() < 0.28, phase: Math.random() });
-      }
-      const grow = 1500 + Math.random() * 900;
-      return { x, y, branches, lead: (50 + Math.random() * 140) * s, width: (3.2 + Math.random() * 2.6) * s,
-               born: grown ? now - grow - Math.random() * 2000 : now, grow,
-               hold: 4200 + Math.random() * 3500, fade: 1300, speed: 1300 + Math.random() * 900 };
-    }
-
-    function spawn(now, grown) {
-      trees.push(tree(-0.05 * w + Math.random() * 0.8 * w, h * (0.12 + Math.random() * 0.76), now, grown));
-    }
-
-    function draw(tr, now) {
-      const age = now - tr.born, total = tr.grow + tr.hold + tr.fade;
-      if (age > total && !still) return false;
-      const g = Math.min(1, age / tr.grow);
-      const fade = age > tr.grow + tr.hold ? Math.max(0, 1 - (age - tr.grow - tr.hold) / tr.fade) : 1;
-      ctx.globalAlpha = theme.alpha * (still ? 1 : fade);
-      ctx.lineCap = "round"; ctx.lineJoin = "round";
-      ctx.strokeStyle = theme.line; ctx.lineWidth = tr.width;
-      ctx.beginPath(); ctx.moveTo(tr.x - tr.lead, tr.y); ctx.lineTo(tr.x - tr.lead + tr.lead * Math.min(1, g * 3), tr.y); ctx.stroke();
-      const gb = Math.max(0, (g - 0.25) / 0.75);
-      for (const b of tr.branches) {
-        ctx.beginPath(); ctx.moveTo(tr.x, tr.y);
-        const steps = 36;
-        for (let i = 1; i <= Math.floor(steps * gb); i++) {
-          const t = i / steps; ctx.lineTo(bez(t, tr.x, b.c1x, b.c2x, b.ex), bez(t, tr.y, b.c1y, b.c2y, b.ey));
-        }
-        ctx.stroke();
-        if (gb >= 1) {
-          ctx.beginPath(); ctx.arc(b.ex, b.ey, b.r, 0, Math.PI * 2);
-          ctx.fillStyle = b.target ? theme.target : theme.node; ctx.fill(); ctx.stroke();
-          if (b.target) {
-            ctx.beginPath(); ctx.arc(b.ex, b.ey, b.r * 0.55, 0, Math.PI * 2); ctx.strokeStyle = theme.node; ctx.lineWidth = tr.width * 0.7; ctx.stroke();
-            ctx.strokeStyle = theme.line; ctx.lineWidth = tr.width;
-          }
-          if (!still) {
-            const t = ((now - tr.born) / tr.speed + b.phase) % 1;
-            ctx.beginPath(); ctx.arc(bez(t, tr.x, b.c1x, b.c2x, b.ex), bez(t, tr.y, b.c1y, b.c2y, b.ey), tr.width * 0.95, 0, Math.PI * 2);
-            ctx.fillStyle = theme.dot; ctx.fill();
-          }
-        }
-      }
-      ctx.beginPath(); ctx.arc(tr.x, tr.y, tr.width * 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = theme.node; ctx.fill(); ctx.stroke();
-      return true;
-    }
-
-    function frame(now) {
-      ctx.clearRect(0, 0, w, h);
-      trees = trees.filter((tr) => draw(tr, now));
-      if (!still && trees.length < wanted() && now - lastSpawn > 700) { spawn(now, false); lastSpawn = now; }
-      ctx.globalAlpha = 1;
-      if (visible && !still) raf = requestAnimationFrame(frame);
-    }
-    function start() { if (!raf && !still) raf = requestAnimationFrame((t) => { raf = 0; frame(t); }); }
-
-    resize();
-    const now = performance.now();
-    for (let i = 0; i < wanted(); i++) spawn(now, true);
-    frame(now);
-    new ResizeObserver(() => { resize(); if (still) frame(performance.now()); }).observe(canvas);
-    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) start(); }).observe(canvas);
-    document.addEventListener("visibilitychange", () => { visible = !document.hidden && visible; if (!document.hidden) start(); });
-    return {
-      burst(x, y) { const t = performance.now(); for (let i = 0; i < 2; i++) trees.push(tree(x + i * 30, y + (i - 0.5) * 60, t, false)); start(); },
-    };
-  }
-
-  const fields = $$("canvas.field").map((c) => [c, field(c)]);
-
-  // Click the hero's background to send out more agents.
-  const hero = document.getElementById("hero");
-  const heroField = fields.find(([c]) => hero.contains(c))?.[1];
-  if (!still && heroField) {
-    $$("[data-motion-only]").forEach((el) => (el.hidden = false));
-    hero.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("a, button, input, label, .robots")) return;
-      const box = hero.getBoundingClientRect();
-      heroField.burst(e.clientX - box.left, e.clientY - box.top);
-    });
-  }
 
   /* ---------- The cover's robots ---------- */
   const robots = document.querySelector(".robots");
