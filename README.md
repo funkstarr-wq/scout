@@ -112,4 +112,4 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 
 ### Before you go live
 
-Fill in the placeholders, written like `{{AMAZON_URL}}`, at the top of `scout/static/site/index.html` (website) and `scout/static/privacy.html` (privacy note). The privacy note's contact email matters: it's how readers ask to stop emails or have their details deleted. Use the web address from step 6 as `{{SITE_URL}}`. The cover is `scout/static/site/book-cover.jpg`. See `docs/website.md`.
+The site is live at https://scout-production-aa37f689.up.railway.app. If you move it to your own domain, update that address in `scout/static/site/index.html` (it's used for link previews). The privacy note currently asks readers to contact you on LinkedIn; once you have an email address on your domain, put it in the "Questions" section of `scout/static/privacy.html`, since it's how readers ask to stop emails or have their details deleted. The cover is `scout/static/site/book-cover.jpg`. See `docs/website.md`.
