@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  {{REFRESH}}
+  <title>Saved questions · Building Scout</title>
+  <style>
+    @font-face { font-family: "Outfit"; font-weight: 400; font-display: swap; src: url("/fonts/outfit-latin-400-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 500; font-display: swap; src: url("/fonts/outfit-latin-500-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 700; font-display: swap; src: url("/fonts/outfit-latin-700-normal.woff2") format("woff2"); }
+    :root { --clay: #da7757; --black: #141414; --paper: #fff8f1; --ink: #1e1c19; --muted: #59544b; --rule: #ddd3c1;
+            --accent: #1f3fa6; --ok: #1d6b3f; --problem: #a8482a; --card: #fff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper: #171412; --ink: #efe7d8; --muted: #b8b1a4; --rule: #3a342e; --accent: #a9b8ff;
+              --ok: #8fd6a9; --problem: #f0a58a; --card: #221e1b; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1.0625rem/1.6 "Outfit", system-ui, sans-serif; }
+    .band { background: var(--clay); color: var(--black); padding: 18px 16px; }
+    .band a { color: var(--black); font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+    .band strong { color: #1f3fa6; }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 16px 80px; }
+    h1 { font-size: 2rem; line-height: 1.2; color: var(--accent); margin: 0 0 12px; }
+    p { margin: 0 0 12px; }
+    a { color: var(--accent); }
+    .muted { color: var(--muted); }
+    ol { list-style: none; padding: 0; margin: 28px 0; display: grid; gap: 12px; }
+    li { background: var(--card); border: 2px solid var(--rule); border-radius: 14px; padding: 14px 16px;
+         display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: center; }
+    li p { margin: 0; grid-column: 1; }
+    li form { grid-column: 2; grid-row: 1 / span 2; }
+    .q { font-weight: 600; }
+    .tag { display: inline-block; font-size: 0.9rem; padding: 2px 10px; border-radius: 999px; border: 1.5px solid var(--rule); color: var(--muted); }
+    .tag.ok { color: var(--ok); border-color: currentColor; }
+    .tag.busy { color: var(--accent); border-color: currentColor; }
+    .tag.problem { color: var(--problem); border-color: currentColor; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 20px; }
+    button { font: 600 1rem "Outfit", system-ui, sans-serif; min-height: 44px; padding: 10px 20px; border-radius: 999px;
+             background: var(--black); color: #fff; border: 2.5px solid var(--black); cursor: pointer; }
+    button.secondary, button.small { background: transparent; color: var(--ink); border-color: var(--ink); }
+    button.small { min-height: 38px; padding: 6px 14px; font-size: 0.9rem; }
+    @media (prefers-color-scheme: dark) { button { background: #efe7d8; color: #141414; border-color: #efe7d8; } }
+    @media (max-width: 560px) { li { grid-template-columns: 1fr; } li form { grid-column: 1; grid-row: auto; } }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  </style>
+</head>
+<body>
+<header class="band"><a href="/">Building <strong>Scout</strong></a></header>
+<main>
+  <h1>Saved questions</h1>
+  <p>These are the questions visitors can pick on the <a href="/demo">demo page</a>. Each one is researched once, for real,
+  and saved. After that, visitors can watch Scout work through it step by step as often as they like. Replays never call
+  Claude, cost nothing and don't use anyone's daily question.</p>
+  <p class="muted">Recording costs real money: about 10 US cents a question, counted in this month's demo budget.
+  Questions that aren't recorded yet don't appear on the demo page. Demo spend this month: {{SPEND}}.</p>
+  {{ACTIONS}}
+  <ol>
+{{ROWS}}
+  </ol>
+  <p class="muted">Re-record a question when its answer may have gone out of date.</p>
+</main>
+</body>
+</html>

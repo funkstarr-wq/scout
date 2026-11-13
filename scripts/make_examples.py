@@ -1,11 +1,14 @@
-"""Make the three example reports for the website.
+"""Make the saved questions: the website's example reports and the demo's free replays.
 
 THIS CALLS THE REAL CLAUDE API AND COSTS MONEY: roughly 10 US cents per report,
-so about 30 cents for all three. It asks before it spends anything.
+so about 60 cents for all six. It asks before it spends anything.
+
+The easier way is the button on your live site's /admin/recordings page, which needs no
+set-up and no commit. Use this script if you'd rather keep the reports in the project.
 
 Run it from the project folder, with the virtual environment active:
 
-    python scripts/make_examples.py                    # all three
+    python scripts/make_examples.py                    # all of them
     python scripts/make_examples.py coffee-and-sleep   # just one
 
 Each report is saved to scout/static/examples/<name>.json, with its progress
@@ -16,7 +19,6 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 if __name__ == "__main__":
@@ -28,37 +30,13 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))  # make "import scout" work from any folder
 
 from scout import config, examples  # noqa: E402
-from scout.graph import run_research  # noqa: E402
 
-CENTS_PER_REPORT = 10  # a rough estimate with the demo settings; /admin/spend and the Console show real figures
+CENTS_PER_REPORT = examples.CENTS_PER_RUN  # a rough estimate; /admin/spend and the Console show real figures
 
 
 def make_one(name: str, out_dir: Path) -> Path:
     """Research one example question and save the result. Returns the file it wrote."""
-    question = examples.EXAMPLES[name]
-    progress: list[str] = []
-
-    def note(message: str) -> None:
-        progress.append(message)
-        print(f"   {message}")
-
-    state = run_research(question, on_progress=note)
-    example = {
-        "name": name,
-        "question": question,
-        "report": state["report"],
-        "sources": state.get("sources", []),
-        "subtasks": state.get("subtasks", []),
-        "progress": progress,
-        "made_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "settings": {
-            "lead_model": config.LEAD_MODEL,
-            "worker_model": config.WORKER_MODEL,
-            "max_subtasks": config.MAX_SUBTASKS,
-            "max_searches_per_researcher": config.MAX_SEARCHES_PER_RESEARCHER,
-            "max_revisions": config.MAX_REVISIONS,
-        },
-    }
+    example = examples.record(name, on_progress=lambda message: print(f"   {message}"))
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{name}.json"
     temporary = path.with_suffix(".json.tmp")
