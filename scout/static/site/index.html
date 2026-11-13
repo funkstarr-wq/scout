@@ -465,47 +465,43 @@
       <p class="lede prose">Ask it a question, and it comes back with a short report you can trust. You'll build every part of it yourself, one chapter at a time, by directing Claude Code.</p>
       <ul class="points">
         <li>
-          <svg class="robots robots-mini" viewBox="-60 60 760 500" aria-hidden="true">
-            <!-- wires from the starting point to each robot -->
-            <path class="wire" pathLength="1" d="M-700 360 H70" />
-            <path class="wire" pathLength="1" d="M70 360 C170 360 210 168 318 168" />
-            <path class="wire" pathLength="1" d="M70 360 C230 360 300 410 418 410" />
-            <path class="wire" pathLength="1" d="M70 360 C150 360 170 492 268 492" />
-            <!-- dotted links between robots -->
-            <path class="dots" d="M436 168 C480 168 520 190 534 238" />
-            <path class="dots" d="M372 248 C360 320 330 380 312 430" />
-            <circle class="node" cx="70" cy="360" r="20" />
-
-            <!-- small robot, top -->
-            <g class="bot bot-2">
-              <circle class="ping" cx="377" cy="96" r="9" fill="#fff" />
-              <path class="ink" d="M377 120 V140" /><circle class="node" cx="377" cy="96" r="12" style="stroke-width:8" />
-              <path class="face-white" d="M330 168 v-10 a22 22 0 0 1 22 -22 h50 a22 22 0 0 1 22 22 v10 z" />
-              <rect class="ink" x="330" y="136" width="94" height="64" rx="22" />
-              <g class="blink"><circle class="eye-dark" cx="360" cy="156" r="7" /><circle class="eye-dark" cx="394" cy="156" r="7" /></g>
-              <path class="ink" d="M318 150 v34 M436 150 v34" />
-              <path class="ink" d="M353 214 v12 a16 16 0 0 0 16 16 h16 a16 16 0 0 0 16 -16 v-12" />
+          <svg class="robots robots-mini" viewBox="0 0 700 330" aria-hidden="true">
+            <!-- the cover's agents: the big blue lead agent in the middle, a helper on each side.
+                 Each robot is placed by the outer group; the inner group bobs and blinks. -->
+            <path class="dots" d="M138 150 C170 70 262 34 332 37" />
+            <path class="dots" d="M562 150 C530 70 438 34 368 37" />
+            <g transform="translate(-257 58)">
+              <g class="bot bot-2">
+                <circle class="ping" cx="377" cy="96" r="9" fill="#fff" />
+                <path class="ink" d="M377 120 V140" /><circle class="node" cx="377" cy="96" r="12" style="stroke-width:8" />
+                <path class="face-white" d="M330 168 v-10 a22 22 0 0 1 22 -22 h50 a22 22 0 0 1 22 22 v10 z" />
+                <rect class="ink" x="330" y="136" width="94" height="64" rx="22" />
+                <g class="blink"><circle class="eye-dark" cx="360" cy="156" r="7" /><circle class="eye-dark" cx="394" cy="156" r="7" /></g>
+                <path class="ink" d="M318 150 v34 M436 150 v34" />
+                <path class="ink" d="M353 214 v12 a16 16 0 0 0 16 16 h16 a16 16 0 0 0 16 -16 v-12" />
+              </g>
             </g>
-
-            <!-- big blue robot: the lead agent -->
-            <g class="bot bot-1">
-              <circle class="ping" cx="534" cy="262" r="12" fill="#fff" />
-              <path class="ink" d="M534 290 V318" /><circle class="node" cx="534" cy="262" r="17" style="stroke-width:10" />
-              <path class="face-blue" d="M432 410 v-46 a40 40 0 0 1 40 -40 h124 a40 40 0 0 1 40 40 v46 z" />
-              <rect class="ink" x="432" y="324" width="204" height="130" rx="40" />
-              <g class="blink"><circle class="eye-light" cx="500" cy="372" r="15" /><circle class="eye-light" cx="568" cy="372" r="15" /></g>
-              <path class="ink" d="M414 352 v60 M654 352 v60" style="stroke-width:12" />
-              <path class="ink" d="M478 476 v26 a30 30 0 0 0 30 30 h52 a30 30 0 0 0 30 -30 v-26" style="stroke-width:11" />
+            <g transform="translate(-184 -225)">
+              <g class="bot bot-1">
+                <circle class="ping" cx="534" cy="262" r="12" fill="#fff" />
+                <path class="ink" d="M534 290 V318" /><circle class="node" cx="534" cy="262" r="17" style="stroke-width:10" />
+                <path class="face-blue" d="M432 410 v-46 a40 40 0 0 1 40 -40 h124 a40 40 0 0 1 40 40 v46 z" />
+                <rect class="ink" x="432" y="324" width="204" height="130" rx="40" />
+                <g class="blink"><circle class="eye-light" cx="500" cy="372" r="15" /><circle class="eye-light" cx="568" cy="372" r="15" /></g>
+                <path class="ink" d="M414 352 v60 M654 352 v60" style="stroke-width:12" />
+                <path class="ink" d="M478 476 v26 a30 30 0 0 0 30 30 h52 a30 30 0 0 0 30 -30 v-26" style="stroke-width:11" />
+              </g>
             </g>
-
-            <!-- small robot, bottom -->
-            <g class="bot bot-3">
-              <circle class="ping" cx="312" cy="420" r="9" fill="#fff" />
-              <path class="ink" d="M312 444 V462" /><circle class="node" cx="312" cy="420" r="12" style="stroke-width:8" />
-              <path class="face-white" d="M272 492 v-8 a20 20 0 0 1 20 -20 h40 a20 20 0 0 1 20 20 v8 z" />
-              <rect class="ink" x="272" y="464" width="80" height="56" rx="20" />
-              <g class="blink"><circle class="eye-dark" cx="298" cy="481" r="6" /><circle class="eye-dark" cx="326" cy="481" r="6" /></g>
-              <path class="ink" d="M260 476 v28 M364 476 v28" />
+            <g transform="translate(203 58)">
+              <g class="bot bot-3">
+                <circle class="ping" cx="377" cy="96" r="9" fill="#fff" />
+                <path class="ink" d="M377 120 V140" /><circle class="node" cx="377" cy="96" r="12" style="stroke-width:8" />
+                <path class="face-white" d="M330 168 v-10 a22 22 0 0 1 22 -22 h50 a22 22 0 0 1 22 22 v10 z" />
+                <rect class="ink" x="330" y="136" width="94" height="64" rx="22" />
+                <g class="blink"><circle class="eye-dark" cx="360" cy="156" r="7" /><circle class="eye-dark" cx="394" cy="156" r="7" /></g>
+                <path class="ink" d="M318 150 v34 M436 150 v34" />
+                <path class="ink" d="M353 214 v12 a16 16 0 0 0 16 16 h16 a16 16 0 0 0 16 -16 v-12" />
+              </g>
             </g>
           </svg>
           <h3>A team of AI agents researches any question</h3>
