@@ -187,12 +187,12 @@
   @keyframes ping { 0% { transform: scale(1); opacity: 0.9; } 70%, 100% { transform: scale(2.4); opacity: 0; } }
 
   /* ---------- Ticker ---------- */
-  .ticker { background: var(--night); color: #f6ede5; overflow: hidden; padding: 1.1rem 0; border-block: 3px solid var(--black); }
+  .ticker { background: var(--night); color: #f6ede5; overflow: hidden; padding: 0.55rem 0; border-block: 2px solid var(--black); }
   .ticker-track { display: flex; width: max-content; }
-  .ticker-track span { white-space: nowrap; font-weight: 800; font-size: clamp(1.4rem, 3vw, 2.1rem); letter-spacing: 0.04em;
-                       text-transform: uppercase; padding-right: 2.2rem; }
-  .ticker-track i { font-style: normal; color: var(--clay); padding: 0 0.9rem; }
-  @media (prefers-reduced-motion: no-preference) { .ticker-track { animation: scroll 38s linear infinite; } }
+  .ticker-track span { white-space: nowrap; font-weight: 800; font-size: clamp(0.8rem, 1.5vw, 1.05rem); letter-spacing: 0.08em;
+                       text-transform: uppercase; padding-right: 1.2rem; }
+  .ticker-track i { font-style: normal; color: var(--clay); font-size: 0.5em; vertical-align: 0.25em; padding: 0 1.1rem; }  /* circles: half the text's size */
+  @media (prefers-reduced-motion: no-preference) { .ticker-track { animation: scroll 24s linear infinite; } }
   @keyframes scroll { to { transform: translateX(-50%); } }
 
   /* ---------- What you'll build ---------- */
