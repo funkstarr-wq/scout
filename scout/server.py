@@ -223,6 +223,11 @@ def og_image():
     return FileResponse(SITE / "og-image.jpg")
 
 
+@app.get("/author.jpg")
+def author_photo():
+    return FileResponse(SITE / "author.jpg")
+
+
 @app.get("/demo", dependencies=[Depends(require_password)])
 def demo(request: Request):
     page = FileResponse(STATIC / "index.html")

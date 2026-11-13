@@ -10,16 +10,15 @@ the tools that build them*. It's Stage 1 of [the website-and-demo brief](brief-w
 | `index.html` | The whole page. The HTML and CSS are in one file, with no JavaScript, no build step and no outside requests. |
 | `cover.jpg` | A placeholder book cover (800 × 1200). Replace it with your real cover, keeping the 2:3 shape. |
 | `og-image.jpg` | The picture shown when someone shares the link (1200 × 630). Replace it once you have the real cover. |
+| `author.jpg` | Your photo for "About the author". Your name and bio are written into `index.html` itself. |
 
 ## Before it goes live
 
-The top of `index.html` lists five placeholders. Swap each one for your real value
+The top of `index.html` lists three placeholders. Swap each one for your real value
 with your editor's "Replace All":
 
 - `{{AMAZON_URL}}`: your book's Amazon page
 - `{{GITHUB_URL}}`: the companion code
-- `{{AUTHOR}}`: your name
-- `{{BIO}}`: two lines about you
 - `{{SITE_URL}}`: the public address, with no slash at the end
 
 ## Preview it on your computer
@@ -30,5 +29,5 @@ note (`/privacy`). The example pages say "coming soon" until you run `scripts/ma
 
 ## The privacy note
 
-`scout/static/privacy.html` has two placeholders of its own, listed at the top of the file:
-`{{AUTHOR}}` and `{{CONTACT_EMAIL}}`. Fill them in the same way.
+`scout/static/privacy.html` has one placeholder of its own, listed at the top of the file:
+`{{CONTACT_EMAIL}}`. Fill it in the same way.

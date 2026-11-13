@@ -9,8 +9,6 @@
 
     {{AMAZON_URL}}   Your book's Amazon page, e.g. https://www.amazon.co.uk/dp/XXXXXXXXXX
     {{GITHUB_URL}}   The companion code, e.g. https://github.com/funkstarr-wq/scout
-    {{AUTHOR}}       Your name, as it appears on the cover
-    {{BIO}}          Two lines about you, in plain text
     {{SITE_URL}}     The site's public address, with no slash at the end,
                      e.g. https://scout-production.up.railway.app
 
@@ -21,6 +19,9 @@
   Images that live next to this file:
     cover.jpg      The book cover (portrait, 2:3). Replace with your real cover.
     og-image.jpg   The picture shown in link previews (1200 x 630).
+    author.jpg     Your photo for "About the author" (square).
+
+  Your name and bio are written straight into the page: search for "Chris Haworth".
   ============================================================================
 -->
 <html lang="en-GB">
@@ -29,7 +30,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Building Scout: A plain-English guide to AI agents</title>
 <meta name="description" content="Build a working AI research assistant, even if you've never written code. A plain-English guide to AI agents, Claude Code, tools, MCP and more.">
-<meta name="author" content="{{AUTHOR}}">
+<meta name="author" content="Chris Haworth">
 <link rel="canonical" href="{{SITE_URL}}/">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#faf7f1" media="(prefers-color-scheme: light)">
@@ -196,9 +197,12 @@
   .part li { padding-left: 0.25rem; margin-bottom: 0.35rem; line-height: 1.4; }
   .part li::marker { color: var(--muted); font-family: var(--sans); font-size: 0.9em; }
 
-  /* ---------- Who / what you need ---------- */
-  .two-up { display: grid; gap: 1rem 4rem; }
-  @media (min-width: 48rem) { .two-up { grid-template-columns: 1fr 1fr; } }
+  /* ---------- Who it's for + what you'll need, side by side ---------- */
+  .pair-band { border-top: 1px solid var(--rule); padding: 4.5rem 0; }
+  @media (max-width: 40rem) { .pair-band { padding: 3.25rem 0; } }
+  .pair { display: grid; gap: 2.5rem 4rem; }
+  @media (min-width: 48rem) { .pair { grid-template-columns: 1fr 1fr; } }
+  .pair section { padding: 0; border-top: 0; }
   .ticks { list-style: none; margin: 0; padding: 0; }
   .ticks li { position: relative; padding-left: 1.6rem; margin-bottom: 0.85rem; }
   .ticks li::before {
@@ -225,7 +229,15 @@
   }
 
   /* ---------- About + footer ---------- */
-  .about p { max-width: 40rem; }
+  .author { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1.75rem; align-items: start; max-width: 46rem; }
+  .author img { width: 7rem; height: 7rem; border-radius: 50%; object-fit: cover; }
+  @media (max-width: 30rem) {
+    .author { grid-template-columns: 1fr; gap: 1rem; }
+    .author img { width: 6rem; height: 6rem; }
+  }
+  .author-name { font-size: 1.3rem; font-weight: 600; line-height: 1.2; margin: 0 0 0.2rem; }
+  .author-role { font-family: var(--sans); font-size: 0.9rem; color: var(--muted); margin: 0 0 1rem; }
+  .author cite { font-style: italic; }
   footer { border-top: 1px solid var(--rule); padding: 2.5rem 0 3rem; font-family: var(--sans); font-size: 0.95rem; color: var(--muted); }
   footer a { color: var(--muted); }
   .footer-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; list-style: none; padding: 0; margin: 0 0 1rem; }
@@ -243,7 +255,7 @@
   <section class="hero" aria-labelledby="title">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow">A book by {{AUTHOR}}</p>
+        <p class="eyebrow">A book by Chris Haworth</p>
         <h1 id="title">Building Scout</h1>
         <p class="subtitle">A plain-English guide to AI agents, and the tools that build them</p>
         <p class="tagline">Build a working AI research assistant, even if you've never written code.</p>
@@ -442,29 +454,27 @@
     </div>
   </section>
 
-  <!-- Who it's for -->
-  <section aria-labelledby="who">
-    <div class="wrap two-up">
-      <h2 id="who">Who it's for</h2>
-      <ul class="ticks">
+  <!-- Who it's for, and what you'll need: side by side -->
+  <div class="pair-band">
+    <div class="wrap pair">
+      <section aria-labelledby="who">
+        <h2 id="who">Who it's for</h2>
+        <ul class="ticks">
         <li><strong>Complete beginners.</strong> If you've never written a line of code, this book was written for you. Every step is explained in plain English.</li>
         <li><strong>People who keep hearing "agents" and "MCP" at work</strong> and want to know what they actually mean, by building one.</li>
       </ul>
-    </div>
-  </section>
-
-  <!-- What you need -->
-  <section aria-labelledby="need">
-    <div class="wrap two-up">
-      <h2 id="need">What you'll need</h2>
-      <ul class="ticks">
+      </section>
+      <section aria-labelledby="need">
+        <h2 id="need">What you'll need</h2>
+        <ul class="ticks">
         <li><strong>A computer.</strong></li>
         <li><strong>A Claude subscription.</strong></li>
         <li><strong>About £10 of API credit,</strong> to pay for Scout's research while you build it.</li>
         <li><strong>Patience for setup.</strong> Chapter 2 walks you through it step by step.</li>
       </ul>
+      </section>
     </div>
-  </section>
+  </div>
 
   <!-- Example reports -->
   <section aria-labelledby="examples">
@@ -493,7 +503,14 @@
   <section class="about" aria-labelledby="author">
     <div class="wrap">
       <h2 id="author">About the author</h2>
-      <p><strong>{{AUTHOR}}</strong>. {{BIO}}</p>
+      <div class="author">
+        <img src="author.jpg" width="200" height="200" alt="Portrait of Chris Haworth">
+        <div>
+          <p class="author-name">Chris Haworth</p>
+          <p class="author-role">Product leader · Claude builder · Vibe coder</p>
+          <p>I'm a product leader in SaaS and digital communications, specialising in personalisation and optimisation. I've been coding for years, and I love &lsquo;vibe coding&rsquo;: describing what you want to an AI and building it together. I build small projects with Claude to explore what AI can do and how it can make everyday life better. <cite>Building Scout</cite> shares what I've learned, in plain English.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -508,7 +525,7 @@
       <li><a href="/privacy">Privacy</a></li>
     </ul>
     <p>This book is independent and is not affiliated with or endorsed by Anthropic. Claude is a trademark of Anthropic.</p>
-    <p>© 2026 {{AUTHOR}}</p>
+    <p>© 2026 Chris Haworth</p>
   </div>
 </footer>
 </body>

@@ -92,4 +92,4 @@ This researches the three website questions with the real API and the demo's set
 
 ### Before you go live
 
-Fill in the placeholders, written like `{{AUTHOR}}`, at the top of `scout/static/site/index.html` (website) and `scout/static/privacy.html` (privacy note). Use the web address from step 6 as `{{SITE_URL}}`. Replace `scout/static/site/cover.jpg` with your real cover. See `docs/website.md`.
+Fill in the placeholders, written like `{{AMAZON_URL}}`, at the top of `scout/static/site/index.html` (website) and `scout/static/privacy.html` (privacy note). Use the web address from step 6 as `{{SITE_URL}}`. Replace `scout/static/site/cover.jpg` with your real cover. See `docs/website.md`.
