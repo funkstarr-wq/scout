@@ -1,15 +1,7 @@
 <!doctype html>
 <!--
   ============================================================================
-  SITE SETTINGS: the only things you need to change in this file.
-
-  Each placeholder below appears in a few places in this page. Swap each one
-  for your real value with your editor's "Replace All".
-
-    {{AMAZON_URL}}   Your book's Amazon page, e.g. https://www.amazon.co.uk/dp/XXXXXXXXXX
-    {{GITHUB_URL}}   The companion code, e.g. https://github.com/funkstarr-wq/scout
-    {{SITE_URL}}     The site's public address, with no slash at the end,
-                     e.g. https://scout-production.up.railway.app
+  The website for Building Scout, live at https://scout-production-aa37f689.up.railway.app
 
   Images next to this file: book-cover.jpg (the book cover), og-image.jpg (link
   previews, 1200 x 630) and author.jpg (your photo).
@@ -27,7 +19,7 @@
 <title>Building Scout: A plain-English guide to AI agents</title>
 <meta name="description" content="Build a working AI research assistant, even if you've never written code. A plain-English guide to AI agents, Claude Code, tools, MCP and more. Free to download as PDF and EPUB.">
 <meta name="author" content="Christopher Haworth">
-<link rel="canonical" href="{{SITE_URL}}/">
+<link rel="canonical" href="https://scout-production-aa37f689.up.railway.app/">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#da7757">
 
@@ -35,8 +27,8 @@
 <meta property="og:site_name" content="Building Scout">
 <meta property="og:title" content="Building Scout: A plain-English guide to AI agents, and the tools that build them">
 <meta property="og:description" content="Build a working AI research assistant, even if you've never written code. Free to download.">
-<meta property="og:url" content="{{SITE_URL}}/">
-<meta property="og:image" content="{{SITE_URL}}/og-image.jpg?v=2">
+<meta property="og:url" content="https://scout-production-aa37f689.up.railway.app/">
+<meta property="og:image" content="https://scout-production-aa37f689.up.railway.app/og-image.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The cover of Building Scout: three friendly robots on branching lines, on a clay background.">
@@ -201,16 +193,15 @@
   .points li { background: var(--card); border: 2.5px solid var(--black); border-radius: 22px; padding: 1.5rem;
                box-shadow: 6px 6px 0 var(--clay); }
   @media (prefers-color-scheme: dark) { .points li { border-color: var(--line); } }
-  .points svg { width: 100%; height: 6.5rem; margin-bottom: 1rem; }
+  .points svg { display: block; width: 100%; height: 7.5rem; margin: 0 0 1rem; background: var(--clay); border-radius: 16px; }
+  .points .robots-mini { max-width: none; overflow: hidden; }  /* the cover's agents, in miniature */
   .points h3 { margin-bottom: 0.5rem; }
   .points p { color: var(--muted); margin: 0; font-size: 1.05rem; }
-  .mini .ln { fill: none; stroke: var(--text); stroke-width: 5; stroke-linecap: round; }
-  .mini .fill-clay { fill: var(--clay); } .mini .fill-blue { fill: var(--blue-bright); } .mini .fill-card { fill: var(--card); }
-  .mini .fill-text { fill: var(--text); } .mini .fill-white { fill: #fff; }
+  .mini .ln { fill: none; stroke: var(--black); stroke-width: 5; stroke-linecap: round; }
+  .mini .fill-clay { fill: var(--clay); } .mini .fill-blue { fill: var(--blue-bright); } .mini .fill-card { fill: #fff; }
+  .mini .fill-text { fill: var(--black); } .mini .fill-white { fill: #fff; }
   .mini .chip { fill: var(--blue); } .mini .chip-t { fill: #fff; font: 800 15px var(--font); }
   @media (prefers-reduced-motion: no-preference) {
-    .mini .hop { transform-box: fill-box; transform-origin: 50% 100%; animation: bob 2.6s ease-in-out infinite; }
-    .mini .hop:nth-of-type(2) { animation-delay: -0.9s; } .mini .hop:nth-of-type(3) { animation-delay: -1.7s; }
     .mini .pop { transform-box: fill-box; transform-origin: 50% 50%; animation: pop 3s ease-in-out infinite; }
     .mini .pop.p2 { animation-delay: 0.4s; } .mini .pop.p3 { animation-delay: 0.8s; }
     .mini .spin { transform-box: fill-box; transform-origin: 50% 50%; animation: spin 14s linear infinite; }
@@ -403,7 +394,7 @@
           <a class="btn btn-black" href="#free">Get the book free</a>
           <a class="btn btn-white" href="#how">Watch Scout think</a>
         </div>
-        <p class="hero-note">Free as a PDF or EPUB. Or <a href="/demo">try the live demo</a>, or <a href="{{AMAZON_URL}}">buy it on Amazon</a>.</p>
+        <p class="hero-note">Free as a PDF or EPUB. Or <a href="/demo">try the live demo</a>.</p>
       </div>
 
       <svg class="robots" viewBox="0 0 620 560" role="img" aria-labelledby="robots-title">
@@ -474,10 +465,44 @@
       <p class="lede prose">Ask it a question, and it comes back with a short report you can trust. You'll build every part of it yourself, one chapter at a time, by directing Claude Code.</p>
       <ul class="points">
         <li>
-          <svg class="mini" viewBox="0 0 300 110" aria-hidden="true">
-            <g class="hop"><rect class="fill-card ln" x="20" y="40" width="70" height="50" rx="18" /><circle class="fill-text" cx="43" cy="62" r="5" /><circle class="fill-text" cx="67" cy="62" r="5" /></g>
-            <g class="hop"><rect class="fill-blue ln" x="115" y="22" width="80" height="68" rx="22" /><circle class="fill-white" cx="140" cy="54" r="7" /><circle class="fill-white" cx="170" cy="54" r="7" /></g>
-            <g class="hop"><rect class="fill-card ln" x="220" y="40" width="70" height="50" rx="18" /><circle class="fill-text" cx="243" cy="62" r="5" /><circle class="fill-text" cx="267" cy="62" r="5" /></g>
+          <svg class="robots robots-mini" viewBox="0 0 700 330" aria-hidden="true">
+            <!-- the cover's agents: the big blue lead agent in the middle, a helper on each side.
+                 Each robot is placed by the outer group; the inner group bobs and blinks. -->
+            <path class="dots" d="M138 150 C170 70 262 34 332 37" />
+            <path class="dots" d="M562 150 C530 70 438 34 368 37" />
+            <g transform="translate(-257 58)">
+              <g class="bot bot-2">
+                <circle class="ping" cx="377" cy="96" r="9" fill="#fff" />
+                <path class="ink" d="M377 120 V140" /><circle class="node" cx="377" cy="96" r="12" style="stroke-width:8" />
+                <path class="face-white" d="M330 168 v-10 a22 22 0 0 1 22 -22 h50 a22 22 0 0 1 22 22 v10 z" />
+                <rect class="ink" x="330" y="136" width="94" height="64" rx="22" />
+                <g class="blink"><circle class="eye-dark" cx="360" cy="156" r="7" /><circle class="eye-dark" cx="394" cy="156" r="7" /></g>
+                <path class="ink" d="M318 150 v34 M436 150 v34" />
+                <path class="ink" d="M353 214 v12 a16 16 0 0 0 16 16 h16 a16 16 0 0 0 16 -16 v-12" />
+              </g>
+            </g>
+            <g transform="translate(-184 -225)">
+              <g class="bot bot-1">
+                <circle class="ping" cx="534" cy="262" r="12" fill="#fff" />
+                <path class="ink" d="M534 290 V318" /><circle class="node" cx="534" cy="262" r="17" style="stroke-width:10" />
+                <path class="face-blue" d="M432 410 v-46 a40 40 0 0 1 40 -40 h124 a40 40 0 0 1 40 40 v46 z" />
+                <rect class="ink" x="432" y="324" width="204" height="130" rx="40" />
+                <g class="blink"><circle class="eye-light" cx="500" cy="372" r="15" /><circle class="eye-light" cx="568" cy="372" r="15" /></g>
+                <path class="ink" d="M414 352 v60 M654 352 v60" style="stroke-width:12" />
+                <path class="ink" d="M478 476 v26 a30 30 0 0 0 30 30 h52 a30 30 0 0 0 30 -30 v-26" style="stroke-width:11" />
+              </g>
+            </g>
+            <g transform="translate(203 58)">
+              <g class="bot bot-3">
+                <circle class="ping" cx="377" cy="96" r="9" fill="#fff" />
+                <path class="ink" d="M377 120 V140" /><circle class="node" cx="377" cy="96" r="12" style="stroke-width:8" />
+                <path class="face-white" d="M330 168 v-10 a22 22 0 0 1 22 -22 h50 a22 22 0 0 1 22 22 v10 z" />
+                <rect class="ink" x="330" y="136" width="94" height="64" rx="22" />
+                <g class="blink"><circle class="eye-dark" cx="360" cy="156" r="7" /><circle class="eye-dark" cx="394" cy="156" r="7" /></g>
+                <path class="ink" d="M318 150 v34 M436 150 v34" />
+                <path class="ink" d="M353 214 v12 a16 16 0 0 0 16 16 h16 a16 16 0 0 0 16 -16 v-12" />
+              </g>
+            </g>
           </svg>
           <h3>A team of AI agents researches any question</h3>
           <p>A planner splits your question up, researchers work on the pieces at the same time, and a writer pulls it all together.</p>
@@ -495,7 +520,7 @@
         </li>
         <li>
           <svg class="mini" viewBox="0 0 300 110" aria-hidden="true">
-            <circle class="fill-clay ring" cx="150" cy="56" r="40" opacity="0.5" />
+            <circle class="fill-white ring" cx="150" cy="56" r="40" opacity="0.5" />
             <g class="spin"><circle class="fill-card ln" cx="150" cy="56" r="44" /><path class="ln" d="M106 56 H194 M150 12 C126 34 126 78 150 100 M150 12 C174 34 174 78 150 100" /></g>
           </svg>
           <h3>It ends up live on the internet</h3>
@@ -664,7 +689,7 @@
             <input id="website" name="website" tabindex="-1" autocomplete="off">
           </p>
           <button class="btn btn-black" type="submit">Download the book</button>
-          <p class="small">Your details aren't shared with anyone. <a href="/privacy">How they're used</a>. Prefer to buy a copy? <a href="{{AMAZON_URL}}">It's also on Amazon</a>.</p>
+          <p class="small">Your details aren't shared with anyone. <a href="/privacy">How they're used</a>.</p>
         </form>
       </div>
     </div>
@@ -749,9 +774,7 @@
     <p class="foot-mark">Building <b>Scout</b></p>
     <ul class="footer-links">
       <li><a href="#free">Get the book free</a></li>
-      <li><a href="{{AMAZON_URL}}">Buy on Amazon</a></li>
       <li><a href="/demo">Live demo</a></li>
-      <li><a href="{{GITHUB_URL}}">Companion code on GitHub</a></li>
       <li><a href="https://www.linkedin.com/in/chris-haworth-98605b27/" rel="me">Chris on LinkedIn</a></li>
       <li><a href="/privacy">Privacy</a></li>
     </ul>

@@ -144,3 +144,9 @@ def test_what_you_need_links_to_each_setup_step():
                 "https://code.claude.com/docs/en/quickstart"):
         assert f'href="{url}" target="_blank" rel="noopener"' in page, url
     assert "Start now with the setup" in page
+
+
+@pytest.mark.parametrize("path", ["/", "/privacy", "/demo", "/examples/coffee-and-sleep"])
+def test_no_unfilled_placeholders_on_public_pages(path):
+    import re
+    assert not re.search(r"\{\{[A-Z_]+\}\}", client.get(path).text), path

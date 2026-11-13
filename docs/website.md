@@ -35,14 +35,11 @@ occasional emails). It posts to `/book`, which saves the reader and shows downlo
 `book/Building-Scout.pdf` and `book/Building-Scout.epub`. See the README for how to get your list of
 readers and how to rebuild the book when the manuscript changes.
 
-## Before it goes live
+## Its address
 
-The top of `index.html` lists three placeholders. Swap each one for your real value
-with your editor's "Replace All":
-
-- `{{AMAZON_URL}}`: your book's Amazon page
-- `{{GITHUB_URL}}`: the companion code
-- `{{SITE_URL}}`: the public address, with no slash at the end
+The site is live at https://scout-production-aa37f689.up.railway.app. That address is written into
+`index.html` for link previews (the canonical link and the `og:` tags); change it there if the site
+moves to its own domain. There are no Amazon or companion-code links for now.
 
 ## Preview it on your computer
 
@@ -52,5 +49,5 @@ note (`/privacy`). The example pages say "coming soon" until you run `scripts/ma
 
 ## The privacy note
 
-`scout/static/privacy.html` has one placeholder of its own, listed at the top of the file:
-`{{CONTACT_EMAIL}}`. Fill it in the same way.
+For now, the "Questions" section of `scout/static/privacy.html` asks readers to message Chris on
+LinkedIn. Once the site has its own domain and email address, put the email there instead.
