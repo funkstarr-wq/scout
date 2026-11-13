@@ -6,16 +6,16 @@
   <meta name="robots" content="noindex">
   <title>{{TITLE}} · Building Scout</title>
   <style>
-    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-400-normal.woff2") format("woff2"); }
-    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: italic; font-display: swap; src: url("/fonts/charis-sil-latin-400-italic.woff2") format("woff2"); }
-    @font-face { font-family: "Charis SIL"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-700-normal.woff2") format("woff2"); }
-    :root { --teal: #174f49; --cream: #f4ecdc; --paper: #faf6ee; --ink: #1e1c19; --muted: #59544b; --rule: #ddd3c1; --accent: #174f49; }
-    @media (prefers-color-scheme: dark) { :root { --paper: #0f1f1d; --ink: #efe7d8; --muted: #b8b1a4; --rule: #2c423e; --accent: #9cd2c7; } }
+    @font-face { font-family: "Outfit"; font-weight: 400; font-display: swap; src: url("/fonts/outfit-latin-400-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 500; font-display: swap; src: url("/fonts/outfit-latin-500-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 700; font-display: swap; src: url("/fonts/outfit-latin-700-normal.woff2") format("woff2"); }
+    :root { --clay: #da7757; --black: #141414; --paper: #fff8f1; --ink: #1e1c19; --muted: #59544b; --rule: #ddd3c1; --accent: #1f3fa6; }
+    @media (prefers-color-scheme: dark) { :root { --paper: #171412; --ink: #efe7d8; --muted: #b8b1a4; --rule: #2c423e; --accent: #a9b8ff; } }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--paper); color: var(--ink); font: 1.125rem/1.6 "Charis SIL", Charter, Georgia, serif; }
-    .band { background: var(--teal); color: var(--cream); padding: 18px 16px; }
-    .band a { color: var(--cream); font-size: 1.1rem; text-decoration: none; }
-    .band em { font-weight: 400; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1.125rem/1.6 "Outfit", system-ui, sans-serif; }
+    .band { background: var(--clay); color: var(--black); padding: 18px 16px; }
+    .band a { color: var(--black); font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+    .band strong { color: #1f3fa6; }
     main { max-width: 640px; margin: 0 auto; padding: 48px 16px 80px; }
     h1 { font-size: 2rem; line-height: 1.2; color: var(--accent); margin: 0 0 16px; }
     p { margin: 0 0 16px; }
@@ -24,13 +24,13 @@
     .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
     .button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 22px;
               border-radius: 6px; font: 600 1rem system-ui, sans-serif; text-decoration: none;
-              background: var(--teal); color: var(--cream); border: 2px solid var(--accent); }
-    .button.secondary { background: transparent; color: var(--accent); }
+              background: var(--black); color: #fff; border: 2.5px solid var(--black); border-radius: 999px; }
+    .button.secondary { background: transparent; color: var(--ink); border-color: var(--ink); }
     :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
   </style>
 </head>
 <body>
-<header class="band"><a href="/"><em>Building</em> <strong>Scout</strong></a></header>
+<header class="band"><a href="/">Building <strong>Scout</strong></a></header>
 <main>
   <h1>{{TITLE}}</h1>
   <p>{{MESSAGE}}</p>
