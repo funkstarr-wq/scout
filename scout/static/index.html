@@ -7,13 +7,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
   <style>
-    :root { --ink: #1d1d1b; --muted: #6b6b66; --line: #e2e0d8; --paper: #fbfaf6; --accent: #2f5d50; }
+    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-400-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: italic; font-display: swap; src: url("/fonts/charis-sil-latin-400-italic.woff2") format("woff2"); }
+    @font-face { font-family: "Charis SIL"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-700-normal.woff2") format("woff2"); }
+    :root { --ink: #1d1d1b; --muted: #6b6b66; --line: #e2e0d8; --paper: #faf6ee; --accent: #174f49; }
     @media (prefers-color-scheme: dark) {
-      :root { --ink: #ecebe6; --muted: #a3a29b; --line: #34332f; --paper: #191917; --accent: #7fb8a4; }
+      :root { --ink: #ecebe6; --muted: #a3a29b; --line: #34332f; --paper: #0f1f1d; --accent: #9cd2c7; }
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--paper); color: var(--ink);
-           font: 17px/1.6 Georgia, "Iowan Old Style", serif; }
+           font: 17px/1.6 "Charis SIL", Charter, Georgia, serif; }
     main { max-width: 760px; margin: 0 auto; padding: 32px 16px 80px; }
     h1 { font-size: 30px; margin: 0 0 4px; letter-spacing: -0.5px; }
     .lede { color: var(--muted); margin: 0 0 24px; }

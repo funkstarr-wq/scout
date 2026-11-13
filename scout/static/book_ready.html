@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Your book is ready · Building Scout</title>
+  <style>
+    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-400-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: italic; font-display: swap; src: url("/fonts/charis-sil-latin-400-italic.woff2") format("woff2"); }
+    @font-face { font-family: "Charis SIL"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-700-normal.woff2") format("woff2"); }
+    :root { --teal: #174f49; --cream: #f4ecdc; --paper: #faf6ee; --ink: #1e1c19; --muted: #59544b; --rule: #ddd3c1; --accent: #174f49; }
+    @media (prefers-color-scheme: dark) { :root { --paper: #0f1f1d; --ink: #efe7d8; --muted: #b8b1a4; --rule: #2c423e; --accent: #9cd2c7; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1.125rem/1.6 "Charis SIL", Charter, Georgia, serif; }
+    .band { background: var(--teal); color: var(--cream); padding: 18px 16px; }
+    .band a { color: var(--cream); font-size: 1.1rem; text-decoration: none; }
+    .band em { font-weight: 400; }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 16px 80px; }
+    h1 { font-size: 2rem; line-height: 1.2; color: var(--accent); margin: 0 0 16px; }
+    p { margin: 0 0 16px; }
+    a { color: var(--accent); }
+    .small { font: 0.95rem/1.5 system-ui, sans-serif; color: var(--muted); }
+    .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 22px;
+              border-radius: 6px; font: 600 1rem system-ui, sans-serif; text-decoration: none;
+              background: var(--teal); color: var(--cream); border: 2px solid var(--accent); }
+    .button.secondary { background: transparent; color: var(--accent); }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  </style>
+</head>
+<body>
+<header class="band"><a href="/"><em>Building</em> <strong>Scout</strong></a></header>
+<main>
+  <h1>Thanks, {{FIRST_NAME}}. Your book is ready.</h1>
+  <p>Choose the edition that suits you. You can download both.</p>
+  <div class="buttons">
+    <a class="button" href="{{PDF_URL}}">Download the PDF</a>
+    <a class="button secondary" href="{{EPUB_URL}}">Download the EPUB</a>
+  </div>
+  <p class="small"><strong>PDF</strong> is best on a computer, or for printing. <strong>EPUB</strong> is best on an e-reader,
+  phone or tablet: open it with Apple Books, Kobo, Google Play Books or most other reading apps.</p>
+  <p class="small">These links work for 7 days. Save the files somewhere you'll find them again.</p>
+  <p>When you're ready, <a href="/demo">try the live demo</a> to see the Scout you're about to build.</p>
+</main>
+</body>
+</html>

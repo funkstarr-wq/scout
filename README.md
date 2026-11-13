@@ -8,7 +8,8 @@ This project also holds the book's website and a public **live demo** of Scout. 
 | `/` | The book's website |
 | `/demo` | Scout itself |
 | `/examples/<name>` | Three finished example reports, which never call Claude |
-| `/privacy` | What the live demo stores |
+| `/privacy` | What the website and the live demo store |
+| `/book` | The free-book form sends readers here, and they get their PDF and EPUB download links |
 
 ## Run it on your computer
 
@@ -62,6 +63,24 @@ python scripts/make_examples.py
 
 This researches the three website questions with the real API and the demo's settings, and asks before it spends anything. It saves the reports to `scout/static/examples/`. Commit those files so the website can show them.
 
+## The free book (PDF and EPUB)
+
+The website's **Get the book free** form asks for a first name, surname and email address, plus an optional "email me now and then" box. A reader who fills it in gets download links for the PDF and the EPUB. The links work for 7 days, and asking again gives a fresh pair. Each reader is stored once, by email address, with whether they're happy to get emails and how many times they've downloaded.
+
+**To get your list of readers**, set `SCOUT_ADMIN_PASSWORD` (see the Railway table below) and open `https://<your site>/admin/signups.csv`. Sign in with the username `admin` and that password. It downloads as a spreadsheet. Only email the people marked "yes".
+
+**When the manuscript changes**, rebuild both editions from `Building-Scout.docx`. It's free and doesn't call Claude. One-off setup:
+```bash
+pip install -r requirements-book.txt && playwright install chromium
+```
+Then:
+```bash
+python scripts/build_book.py
+```
+Commit the new `book/Building-Scout.pdf` and `book/Building-Scout.epub`.
+
+**While this repository is public**, anyone can download the book files (and the manuscript) straight from GitHub, without filling in the form. Make the repository private if the form matters to you.
+
 ## Deploying the demo on Railway
 
 1. **Make a separate API key for the demo.** In the Claude Console, create a workspace just for the demo (for example "Scout demo"), set a **monthly spend limit** on it of $25, which is about £20, and create an API key in that workspace. Then a busy day, a bug or a leaked key can never cost more than that, and you can revoke the demo key without breaking your own work.
@@ -77,7 +96,8 @@ This researches the three website questions with the real API and the demo's set
    | `SCOUT_PER_VISITOR_LIMIT` | `1` is recommended at this budget, so two different people can try it each day. The default is `2`, which would let the first visitor use the whole day's questions. |
    | `SCOUT_MAX_CONCURRENT` | `1` |
    | `SCOUT_IP_SALT` | A long random string. Make one with the command below this table. |
-   | `SCOUT_DB` | `/data/scout.db`. This is required: without it, the daily counts would start again every time Scout restarts. |
+   | `SCOUT_DB` | `/data/scout.db`. This is required: without it, the daily counts would start again every time Scout restarts, and your list of readers would be lost. |
+   | `SCOUT_ADMIN_PASSWORD` | A long password of your own, for downloading your list of readers from `/admin/signups.csv`. |
 
    To make the salt, run this and paste the result into Railway:
    ```bash
@@ -92,4 +112,4 @@ This researches the three website questions with the real API and the demo's set
 
 ### Before you go live
 
-Fill in the placeholders, written like `{{AMAZON_URL}}`, at the top of `scout/static/site/index.html` (website) and `scout/static/privacy.html` (privacy note). Use the web address from step 6 as `{{SITE_URL}}`. Replace `scout/static/site/cover.jpg` with your real cover. See `docs/website.md`.
+Fill in the placeholders, written like `{{AMAZON_URL}}`, at the top of `scout/static/site/index.html` (website) and `scout/static/privacy.html` (privacy note). The privacy note's contact email matters: it's how readers ask to stop emails or have their details deleted. Use the web address from step 6 as `{{SITE_URL}}`. Replace `scout/static/site/cover.jpg` with your real cover. See `docs/website.md`.

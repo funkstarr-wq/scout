@@ -9,13 +9,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy · Building Scout</title>
   <style>
-    :root { --ink: #1d1d1b; --muted: #6b6b66; --line: #e2e0d8; --paper: #fbfaf6; --accent: #2f5d50; }
+    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-400-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Charis SIL"; font-weight: 400; font-style: italic; font-display: swap; src: url("/fonts/charis-sil-latin-400-italic.woff2") format("woff2"); }
+    @font-face { font-family: "Charis SIL"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/charis-sil-latin-700-normal.woff2") format("woff2"); }
+    :root { --ink: #1d1d1b; --muted: #6b6b66; --line: #e2e0d8; --paper: #faf6ee; --accent: #174f49; }
     @media (prefers-color-scheme: dark) {
-      :root { --ink: #ecebe6; --muted: #a3a29b; --line: #34332f; --paper: #191917; --accent: #7fb8a4; }
+      :root { --ink: #ecebe6; --muted: #a3a29b; --line: #34332f; --paper: #0f1f1d; --accent: #9cd2c7; }
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--paper); color: var(--ink);
-           font: 17px/1.65 Georgia, "Iowan Old Style", serif; }
+           font: 17px/1.65 "Charis SIL", Charter, Georgia, serif; }
     main { max-width: 680px; margin: 0 auto; padding: 32px 16px 80px; }
     a { color: var(--accent); }
     .back { margin: 0 0 24px; font: 14px system-ui, sans-serif; }
@@ -29,10 +32,20 @@
 <main>
   <p class="back"><a href="/">← About the book</a></p>
   <h1>Privacy</h1>
-  <p class="lede">This page explains what the live demo of Scout stores, why, and for how long.
-  The rest of this website stores nothing about you.</p>
+  <p class="lede">This page explains what this website stores, why, and for how long. Only two things store anything:
+  asking for the free book, and using the live demo of Scout. The rest of the site stores nothing about you.</p>
 
-  <h2>What the demo stores</h2>
+  <h2>If you ask for the free book</h2>
+  <ul>
+    <li><strong>Your first name, surname and email address</strong>, and whether you said yes to occasional emails
+      about new chapters and books.</li>
+    <li><strong>When you asked, and how many times you downloaded the book.</strong></li>
+  </ul>
+  <p>These are used to give you the download links and to let the author know who is reading. You'll only get emails
+  if you ticked the box, and you can ask to stop at any time. Your details are kept until you ask for them to be
+  deleted. They are only seen by the author, and are never shared or sold.</p>
+
+  <h2>What the live demo stores</h2>
   <ul>
     <li><strong>Your question and Scout's report</strong>, so you can read the report and see it in your history.</li>
     <li><strong>A one-way code made from your internet address, today's date and a secret key.</strong> It is used
@@ -42,7 +55,7 @@
       There are no other cookies, no analytics and no tracking.</li>
   </ul>
 
-  <h2>Who can see it</h2>
+  <h2>Who can see your questions</h2>
   <p>Only you can see your questions and reports on the demo. The author, who runs the demo, can see the
   stored questions and reports.</p>
 
@@ -51,7 +64,7 @@
   The demo is hosted on Railway, which keeps standard access logs, including internet addresses,
   as almost all web hosts do.</p>
 
-  <h2>How long it's kept</h2>
+  <h2>How long the demo keeps things</h2>
   <p>Questions and reports are deleted automatically after 30 days. The daily codes are wiped the day after
   they are made. The cookie expires 30 days after your last visit.</p>
 
@@ -59,8 +72,8 @@
   <p>The demo is for trying Scout out. Don't type anything into it that you wouldn't want stored.</p>
 
   <h2>Questions</h2>
-  <p>The demo is run by Chris Haworth. To ask about your data, or to have it deleted sooner,
-  email {{CONTACT_EMAIL}}.</p>
+  <p>This website and the demo are run by Chris Haworth. To ask about your data, to stop emails,
+  or to have your details deleted, email {{CONTACT_EMAIL}}.</p>
 </main>
 </body>
 </html>

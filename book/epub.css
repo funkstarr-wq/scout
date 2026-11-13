@@ -1,0 +1,23 @@
+/* Styles for the EPUB edition of Building Scout. E-readers let readers change fonts and sizes,
+   so this stays light: the cover's font (Charis SIL, embedded), teal headings, readable code. */
+
+@font-face { font-family: "Charis SIL"; font-style: normal; font-weight: 400; src: url("../fonts/charis-sil-latin-400-normal.woff2"); }
+@font-face { font-family: "Charis SIL"; font-style: italic; font-weight: 400; src: url("../fonts/charis-sil-latin-400-italic.woff2"); }
+@font-face { font-family: "Charis SIL"; font-style: normal; font-weight: 700; src: url("../fonts/charis-sil-latin-700-normal.woff2"); }
+@font-face { font-family: "Charis SIL"; font-style: italic; font-weight: 700; src: url("../fonts/charis-sil-latin-700-italic.woff2"); }
+
+body { font-family: "Charis SIL", Charter, Georgia, serif; line-height: 1.5; }
+h1, h2, h3 { line-height: 1.2; page-break-after: avoid; }
+h1 { color: #174f49; text-align: center; margin-top: 30%; }
+h2 { color: #174f49; }
+h1.title { margin-top: 20%; text-align: left; }
+p.subtitle { font-style: italic; }
+pre {
+  font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace; font-size: 0.8em; line-height: 1.4;
+  white-space: pre-wrap; background: #eef2ef; border-left: 3px solid #174f49; padding: 0.4em 0.6em;
+}
+code { font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace; font-size: 0.88em; }
+pre code { font-size: inherit; }
+table { border-collapse: collapse; font-size: 0.85em; }
+th, td { border-bottom: 1px solid #d9d1c3; padding: 0.25em 0.35em; text-align: left; vertical-align: top; }
+img { max-width: 100%; }
