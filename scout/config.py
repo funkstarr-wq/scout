@@ -18,6 +18,20 @@ def _switch(name: str) -> bool:
     raise RuntimeError(f"{name} must be 1 (on) or 0 (off). It is set to {raw!r}.")
 
 
+def _dollars(name: str, default: float) -> float:
+    """Read an amount of money in US dollars, like 10 or 12.50. A typo stops Scout starting."""
+    raw = os.getenv(name, "").strip().lstrip("$")
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        raise RuntimeError(f"{name} must be an amount in US dollars, like 10. It is set to {raw!r}.") from None
+    if value < 0:
+        raise RuntimeError(f"{name} can't be negative. It is set to {value}.")
+    return value
+
+
 def _whole_number(name: str, default: int, smallest: int = 0) -> int:
     """Read a whole-number setting. A typo stops Scout starting rather than meaning 'no limit'."""
     raw = os.getenv(name, "").strip()
@@ -37,18 +51,27 @@ def _whole_number(name: str, default: int, smallest: int = 0) -> int:
 DEMO_MODE = _switch("DEMO_MODE")
 # A pretend Claude for trying the app for free. Answers are made up; the page says so.
 FAKE_MODE = _switch("SCOUT_FAKE")
+# Whether demo visitors may ask their own questions, which costs the owner money. It is off
+# unless SCOUT_LIVE_QUESTIONS=1, so the demo only replays saved questions and spends nothing.
+# Your own copy (DEMO_MODE off) always takes questions.
+LIVE_QUESTIONS = _switch("SCOUT_LIVE_QUESTIONS") if DEMO_MODE else True
 
 # The lead model plans, writes and reviews. The worker model does the searching.
-LEAD_MODEL = os.getenv("SCOUT_LEAD_MODEL", "claude-sonnet-5-5")
-WORKER_MODEL = os.getenv("SCOUT_WORKER_MODEL", "claude-haiku-5-5")
+# The live demo uses the cheaper Haiku for both, because every question costs the owner money:
+# per word, Haiku costs about a twentieth of Sonnet.
+# A blank setting counts as "not set", so an empty Railway variable can't leave Scout without a model.
+LEAD_MODEL = os.getenv("SCOUT_LEAD_MODEL") or ("claude-haiku-5-5" if DEMO_MODE else "claude-sonnet-5-5")
+WORKER_MODEL = os.getenv("SCOUT_WORKER_MODEL") or "claude-haiku-5-5"
 
 # Effort limits. These keep a single question from running up a large bill.
-# The live demo uses smaller ones, because every question costs the owner money.
+# The live demo uses smaller ones. Web searches are its biggest cost ($0.01 each), and every
+# extra researcher turn means re-reading the search results gathered so far.
 MAX_SUBTASKS = 3 if DEMO_MODE else 5          # most researchers the planner may start
-MAX_RESEARCH_TURNS = 8                         # most back-and-forth turns for one researcher
-MAX_SEARCHES_PER_RESEARCHER = 3 if DEMO_MODE else 5
+MAX_RESEARCH_TURNS = 4 if DEMO_MODE else 8     # most back-and-forth turns for one researcher
+MAX_SEARCHES_PER_RESEARCHER = 2 if DEMO_MODE else 5
 MAX_FINDINGS_PER_RESEARCHER = 8
 MAX_REVISIONS = 0 if DEMO_MODE else 1          # how many times the writer may redo a rejected report
+WRITER_MAX_TOKENS = 3000 if DEMO_MODE else 6000  # longest report the writer may produce
 
 DB_PATH = os.getenv("SCOUT_DB", str(PROJECT_ROOT / "scout.db"))
 DB_PATH_IS_SET = bool(os.getenv("SCOUT_DB", "").strip())
@@ -68,6 +91,11 @@ API_TIMEOUT_SECONDS = 120         # longest the demo waits for any single reply 
 API_MAX_RETRIES = 1               # the demo tries a failed reply once more at most (each try is billed)
 KEEP_DEMO_DAYS = 30               # demo questions and reports are deleted after this many days
 IP_SALT = os.getenv("SCOUT_IP_SALT", "")  # secret mixed into visitor fingerprints
+# The most the demo may spend on the Claude API in a calendar month (UTC), in US dollars.
+# Scout adds up what each reply actually costs (see spend.py) and stops taking questions
+# before this is reached. Set the same limit in the Claude Console as the hard stop.
+MONTHLY_BUDGET_USD = _dollars("SCOUT_MONTHLY_BUDGET_USD", 10.0)
+QUESTION_RESERVE_USD = 0.50       # headroom for one more question: the demo stops this far below the budget
 
 # The free book. Readers fill in a short form, then get download links that work for a week.
 BOOK_DIR = PROJECT_ROOT / "book"          # Building-Scout.pdf and Building-Scout.epub live here

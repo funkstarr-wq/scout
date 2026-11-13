@@ -38,6 +38,9 @@ def _connect():
                downloads INTEGER NOT NULL DEFAULT 0
            )"""
     )
+    conn.execute("CREATE TABLE IF NOT EXISTS spend (month TEXT PRIMARY KEY, usd REAL NOT NULL DEFAULT 0)")
+    # Saved runs of the demo's preset questions, which visitors can replay for free.
+    conn.execute("CREATE TABLE IF NOT EXISTS recordings (name TEXT PRIMARY KEY, data TEXT NOT NULL, made_at TEXT NOT NULL)")
     # Databases made before the live demo existed lack the last two columns. Add them.
     columns = {row["name"] for row in conn.execute("PRAGMA table_info(jobs)")}
     for column in ("visitor_id", "ip_hash"):
@@ -229,3 +232,48 @@ def list_signups() -> list[dict]:
             "FROM signups ORDER BY created_at"
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+# ------------------------------------------------------- what the demo spends
+def this_month() -> str:
+    """The current month in UTC, like 2026-11. The demo's budget resets when this changes."""
+    return utcnow().strftime("%Y-%m")
+
+
+def add_spend(usd: float) -> None:
+    if usd <= 0:
+        return
+    with _connect() as conn:
+        conn.execute(
+            "INSERT INTO spend (month, usd) VALUES (?, ?) ON CONFLICT(month) DO UPDATE SET usd = usd + excluded.usd",
+            (this_month(), usd),
+        )
+
+
+def spend_this_month() -> float:
+    with _connect() as conn:
+        row = conn.execute("SELECT usd FROM spend WHERE month = ?", (this_month(),)).fetchone()
+    return float(row["usd"]) if row else 0.0
+
+
+# ------------------------------------------------------------ saved runs
+def save_recording(name: str, data: dict) -> None:
+    """Keep a finished run of a preset question, replacing any earlier one."""
+    with _connect() as conn:
+        conn.execute(
+            "INSERT INTO recordings (name, data, made_at) VALUES (?, ?, ?) "
+            "ON CONFLICT(name) DO UPDATE SET data = excluded.data, made_at = excluded.made_at",
+            (name, json.dumps(data, ensure_ascii=False), _now()),
+        )
+
+
+def get_recording(name: str) -> dict | None:
+    with _connect() as conn:
+        row = conn.execute("SELECT data FROM recordings WHERE name = ?", (name,)).fetchone()
+    return json.loads(row["data"]) if row else None
+
+
+def recording_dates() -> dict[str, str]:
+    """When each saved run was made, by name."""
+    with _connect() as conn:
+        return {row["name"]: row["made_at"] for row in conn.execute("SELECT name, made_at FROM recordings")}

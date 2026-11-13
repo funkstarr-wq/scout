@@ -291,9 +291,17 @@ def run_python(code, **env):
 def test_demo_mode_uses_the_cheaper_effort_settings():
     code = ("from scout import config, tools; "
             "print(config.MAX_SUBTASKS, config.MAX_SEARCHES_PER_RESEARCHER, config.MAX_REVISIONS, "
-            "tools.WEB_SEARCH_TOOL['max_uses'])")
-    assert run_python(code, DEMO_MODE="1").stdout.split() == ["3", "3", "0", "3"]
-    assert run_python(code, DEMO_MODE="0").stdout.split() == ["5", "5", "1", "5"]
+            "tools.WEB_SEARCH_TOOL['max_uses'], config.MAX_RESEARCH_TURNS, config.WRITER_MAX_TOKENS, "
+            "config.LEAD_MODEL, config.WORKER_MODEL)")
+    assert run_python(code, DEMO_MODE="1", SCOUT_LEAD_MODEL="").stdout.split() == \
+        ["3", "2", "0", "2", "4", "3000", "claude-haiku-5-5", "claude-haiku-5-5"]
+    assert run_python(code, DEMO_MODE="0", SCOUT_LEAD_MODEL="").stdout.split() == \
+        ["5", "5", "1", "5", "8", "6000", "claude-sonnet-5-5", "claude-haiku-5-5"]
+
+
+def test_the_demo_lead_model_can_still_be_chosen():
+    code = "from scout import config; print(config.LEAD_MODEL)"
+    assert run_python(code, DEMO_MODE="1", SCOUT_LEAD_MODEL="claude-sonnet-5-5").stdout.strip() == "claude-sonnet-5-5"
 
 
 # ---------------------------------------------------------- refusing to start

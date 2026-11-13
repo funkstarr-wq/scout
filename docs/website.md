@@ -45,7 +45,8 @@ moves to its own domain. There are no Amazon or companion-code links for now.
 
 Run Scout (see the README) and open http://127.0.0.1:8000. The website is served at `/`, and its
 links go to the live demo (`/demo`), the three example reports (`/examples/...`) and the privacy
-note (`/privacy`). The example pages say "coming soon" until you run `scripts/make_examples.py`.
+note (`/privacy`). The example pages say "coming soon" until you record the saved questions, with the button on
+`/admin/recordings` or by running `scripts/make_examples.py`.
 
 ## The privacy note
 

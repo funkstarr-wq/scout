@@ -4,8 +4,9 @@ Pages:
     /                  the book's website (always public)
     /book              the free-book form posts here; download links are /book/<token>/pdf or /epub
     /admin/signups.csv the list of readers who asked for the book (needs SCOUT_ADMIN_PASSWORD)
+    /admin/recordings  where the owner records the saved questions (needs SCOUT_ADMIN_PASSWORD)
     /demo              the Scout page itself (password-protected unless DEMO_MODE is on)
-    /examples/<name>   three finished example reports (always public, never call Claude)
+    /examples/<name>   the saved questions' finished reports (always public, never call Claude)
     /privacy           what the live demo stores (always public)
 """
 import csv
@@ -167,8 +168,11 @@ def max_question_chars() -> int:
 REFUSALS = {
     "visitor": (429, "You've used your {n} questions for today. Come back tomorrow, or have a look at the example reports."),
     "daily": (429, "The demo has answered all the questions it can afford today. It resets overnight. "
-                   "Meanwhile, here are three finished reports."),
+                   "Meanwhile, you can watch Scout answer one of the saved questions, free."),
     "busy": (503, "Scout is busy with someone else's question. Please try again in a minute."),
+    "budget": (429, "The demo has used up this month's research budget, so it's resting until the 1st. "
+                    "Meanwhile, you can watch Scout answer one of the saved questions, free."),
+    "saved_only": (403, "The demo shows saved questions only. Pick one above to watch Scout at work."),
 }
 NO_COOKIE = ("Scout needs a cookie to show you your report. Please allow cookies for this site, "
              "reload the page and try again.")
@@ -237,7 +241,7 @@ def site_image(name: str):
 @app.get("/demo", dependencies=[Depends(require_password)])
 def demo(request: Request):
     page = FileResponse(STATIC / "index.html")
-    if config.DEMO_MODE:
+    if config.DEMO_MODE and config.LIVE_QUESTIONS:  # the cookie is only needed to show visitors their own questions
         visitor_id(request, page)
     return page
 
@@ -337,9 +341,8 @@ def download_book(token: str, edition: str):
     return FileResponse(path, media_type=media_type, filename=filename, headers={"Cache-Control": "private, no-store"})
 
 
-@app.get("/admin/signups.csv")
-def signups_csv(credentials: HTTPBasicCredentials | None = Depends(basic)):
-    """The readers who asked for the book, as a spreadsheet. Username: admin."""
+def require_admin(credentials: HTTPBasicCredentials | None = Depends(basic)):
+    """The owner's pages. Username: admin, password: SCOUT_ADMIN_PASSWORD. Without one, they don't exist."""
     if not config.ADMIN_PASSWORD:
         raise HTTPException(404)
     ok = credentials is not None and secrets.compare_digest(
@@ -348,6 +351,20 @@ def signups_csv(credentials: HTTPBasicCredentials | None = Depends(basic)):
     )
     if not ok:
         raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="Building Scout admin"'})
+
+
+@app.get("/admin/spend", dependencies=[Depends(require_admin)])
+def demo_spend():
+    """What the live demo has spent on the Claude API this month, against its budget."""
+    spent = store.spend_this_month()
+    return {"month": store.this_month(), "spent_usd": round(spent, 4),
+            "budget_usd": config.MONTHLY_BUDGET_USD,
+            "accepting_questions": spent + config.QUESTION_RESERVE_USD <= config.MONTHLY_BUDGET_USD}
+
+
+@app.get("/admin/signups.csv", dependencies=[Depends(require_admin)])
+def signups_csv():
+    """The readers who asked for the book, as a spreadsheet. Username: admin."""
     out = io.StringIO()
     sheet = csv.writer(out)
     sheet.writerow(["First name", "Surname", "Email", "Happy to get emails", "First asked", "Last asked", "Downloads"])
@@ -360,16 +377,148 @@ def signups_csv(credentials: HTTPBasicCredentials | None = Depends(basic)):
                              "Cache-Control": "no-store"})
 
 
+# ---------------------------------------------------------- saved questions
+class Recorder:
+    """Records the saved questions for real, one at a time, in the background, when the owner asks.
+
+    Only one batch runs at once. A run is skipped if this month's budget can't cover it.
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.thread: threading.Thread | None = None
+        self.waiting: list[str] = []
+        self.now: str | None = None
+        self.problems: dict[str, str] = {}  # what went wrong with a question in the latest batch
+
+    def busy(self) -> bool:
+        return self.thread is not None and self.thread.is_alive()
+
+    def start(self, names: list[str]) -> bool:
+        with self.lock:
+            if self.busy() or not names:
+                return False
+            self.waiting, self.problems = list(names), {}
+            self.thread = threading.Thread(target=self._work, name="scout-recorder", daemon=True)
+            self.thread.start()
+            return True
+
+    def _work(self) -> None:
+        while True:
+            with self.lock:
+                if not self.waiting:
+                    self.now = None
+                    return
+                name = self.now = self.waiting.pop(0)
+            if store.spend_this_month() + config.QUESTION_RESERVE_USD > config.MONTHLY_BUDGET_USD:
+                self.problems[name] = "Not recorded: this month's budget is used up."
+                continue
+            try:
+                store.save_recording(name, examples.record(name))
+            except TimeoutError:
+                self.problems[name] = "Not recorded: Scout ran out of time. Try this one again."
+            except Exception as exc:
+                log.exception("Recording %s failed", name)
+                self.problems[name] = f"Not recorded: something went wrong ({type(exc).__name__}). Try again later."
+
+
+recorder = Recorder()
+
+
+def recording_check() -> str:
+    """A code the record buttons send back, so another website can't press them for you."""
+    return hmac.new(config.ADMIN_PASSWORD.encode(), b"record the saved questions", hashlib.sha256).hexdigest()
+
+
+def cents(n: int) -> str:
+    return f"about {n * examples.CENTS_PER_RUN} US cents"
+
+
+@app.get("/admin/recordings", dependencies=[Depends(require_admin)])
+def recordings_page():
+    """The owner's page for recording the saved questions that visitors can replay for free."""
+    busy = recorder.busy()
+    rows, missing = [], []
+    for name, question in examples.EXAMPLES.items():
+        saved = examples.load(name)
+        if busy and name == recorder.now:
+            status = '<span class="tag busy">Recording now…</span>'
+        elif busy and name in recorder.waiting:
+            status = '<span class="tag">Waiting its turn</span>'
+        elif name in recorder.problems:
+            status = f'<span class="tag problem">{html.escape(recorder.problems[name])}</span>'
+        elif saved:
+            made = (saved.get("made_at") or "")[:10]
+            took = f", took {saved['took_seconds']:.0f} seconds" if saved.get("took_seconds") else ""
+            status = (f'<span class="tag ok">Saved {html.escape(made)}{html.escape(took)}</span> '
+                      f'<a href="/demo#saved-{name}">Watch it</a> · <a href="/examples/{name}">Read it</a>')
+        else:
+            status = '<span class="tag">Not recorded yet</span>'
+        if not saved:
+            missing.append(name)
+        again = "" if busy else (
+            f'<form method="post"><input type="hidden" name="check" value="{recording_check()}">'
+            f'<button class="small" name="which" value="{name}">{"Record again" if saved else "Record"}</button></form>')
+        rows.append(f"<li><p class=\"q\">{html.escape(question)}</p><p>{status}</p>{again}</li>")
+
+    if busy:
+        actions = "<p>Recording… each question takes a minute or two. This page refreshes itself.</p>"
+    else:
+        buttons = []
+        if missing:
+            buttons.append(f'<button name="which" value="missing">Record the {len(missing)} missing '
+                           f'question{"s" if len(missing) != 1 else ""} ({cents(len(missing))})</button>')
+        buttons.append(f'<button class="secondary" name="which" value="all">Record all {len(examples.EXAMPLES)} '
+                       f'again ({cents(len(examples.EXAMPLES))})</button>')
+        actions = (f'<form method="post" class="buttons"><input type="hidden" name="check" value="{recording_check()}">'
+                   + "".join(buttons) + "</form>")
+    spent = store.spend_this_month()
+    page = (STATIC / "admin_recordings.html").read_text(encoding="utf-8")
+    for key, value in {
+        "REFRESH": '<meta http-equiv="refresh" content="10">' if busy else "",
+        "ROWS": "\n".join(rows),
+        "ACTIONS": actions,
+        "SPEND": f"${spent:.2f} of ${config.MONTHLY_BUDGET_USD:.2f}" if config.DEMO_MODE else "not counted (not the live demo)",
+    }.items():
+        page = page.replace("{{" + key + "}}", value)  # every value above is built from escaped text
+    return HTMLResponse(page, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/admin/recordings", dependencies=[Depends(require_admin)])
+async def record_saved_questions(request: Request):
+    """Start recording. This spends real money, about 10 cents a question."""
+    body = await request.body()
+    if len(body) > LONGEST_FORM:
+        raise HTTPException(413, "That form is too large.")
+    form = {k: v[0] for k, v in parse_qs(body.decode("utf-8", "replace")).items()}
+    if not secrets.compare_digest(form.get("check", ""), recording_check()):
+        raise HTTPException(403, "Please go back to the recordings page, reload it and press the button again.")
+    which = form.get("which", "")
+    if which == "all":
+        names = list(examples.EXAMPLES)
+    elif which == "missing":
+        names = [n for n in examples.EXAMPLES if examples.load(n) is None]
+    elif which in examples.EXAMPLES:
+        names = [which]
+    else:
+        raise HTTPException(400, "Unknown choice.")
+    recorder.start(names)
+    return RedirectResponse("/admin/recordings", status_code=303)
+
+
 # ------------------------------------------------------------------------- API
 @app.get("/api/settings")
 def settings():
     """What the Scout page needs to know about how this copy is set up."""
+    ready = set(examples.recorded())
     return {
         "demo": config.DEMO_MODE,
         "fake": config.FAKE_MODE,
+        "live": config.LIVE_QUESTIONS,  # off: visitors can only watch the saved questions
         "max_chars": max_question_chars(),
         "per_visitor": config.PER_VISITOR_LIMIT,
-        "examples": [{"name": n, "question": q} for n, q in examples.EXAMPLES.items()],
+        # "recorded" ones have a saved run the page can replay, which costs nothing
+        "examples": [{"name": n, "question": q, "recorded": n in ready} for n, q in examples.EXAMPLES.items()],
     }
 
 
@@ -383,6 +532,8 @@ def example_data(name: str):
 
 @app.post("/api/research", dependencies=[Depends(require_password)])
 def start_research(body: Question, background: BackgroundTasks, request: Request):
+    if not config.LIVE_QUESTIONS:  # the demo is replaying saved questions only, so nothing is spent
+        raise refusal("saved_only")
     question = body.question.strip()
     longest = max_question_chars()
     if not config.QUESTION_MIN_CHARS <= len(question) <= longest:
@@ -401,6 +552,9 @@ def start_research(body: Question, background: BackgroundTasks, request: Request
     if vid is None:
         raise HTTPException(400, NO_COOKIE)
     tidy_demo_data()
+    # Stop before the month's budget: keep enough headroom for the question to finish.
+    if store.spend_this_month() + config.QUESTION_RESERVE_USD > config.MONTHLY_BUDGET_USD:
+        raise refusal("budget")
     got_slot = slots.try_take()
     try:
         job_id, reason = store.try_create_job(

@@ -7,6 +7,7 @@ the running app, so you can click through it for free.
 import anthropic
 
 from . import config
+from .spend import Metered
 
 _client = None
 
@@ -19,8 +20,9 @@ def client():
 
             _client = FakeClient()
         elif config.DEMO_MODE:
-            # The live demo gives up on a slow reply sooner, so one question can't run on for ages.
-            _client = anthropic.Anthropic(timeout=config.API_TIMEOUT_SECONDS, max_retries=config.API_MAX_RETRIES)
+            # The live demo gives up on a slow reply sooner, so one question can't run on for ages,
+            # and adds up what every reply costs so it can stop at its monthly budget.
+            _client = Metered(anthropic.Anthropic(timeout=config.API_TIMEOUT_SECONDS, max_retries=config.API_MAX_RETRIES))
         else:
             _client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY
     return _client

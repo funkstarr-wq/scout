@@ -7,9 +7,10 @@ This project also holds the book's website and a public **live demo** of Scout. 
 |---|---|
 | `/` | The book's website |
 | `/demo` | Scout itself |
-| `/examples/<name>` | Three finished example reports, which never call Claude |
+| `/examples/<name>` | The saved questions' finished reports, which never call Claude |
 | `/privacy` | What the website and the live demo store |
 | `/book` | The free-book form sends readers here, and they get their PDF and EPUB download links |
+| `/admin/recordings` | Where you record the saved questions (username `admin`, password `SCOUT_ADMIN_PASSWORD`) |
 
 ## Run it on your computer
 
@@ -35,17 +36,21 @@ This runs Scout exactly as the public demo will, but with a pretend Claude, so n
 DEMO_MODE=1 SCOUT_FAKE=1 SCOUT_IP_SALT=practice-salt-for-my-computer uvicorn scout.server:app --reload
 ```
 
-Open http://127.0.0.1:8000/demo and ask a question twice. The third time, you're told you've used your questions for today, with links to the example reports.
+Open http://127.0.0.1:8000/demo. Like the real demo, it only offers the saved questions, and says they're being prepared until some are recorded. To try visitors asking their own questions, put `SCOUT_LIVE_QUESTIONS=1` at the start of the command. Then ask a question twice: the third time, you're told you've used your questions for today, and offered the saved questions.
 
 ## How the live demo protects your money
 
-Every demo question costs you roughly 25 US cents (about 20p), which is an estimate. When `DEMO_MODE=1`:
+**The demo only shows the saved questions, so visitors spend nothing.** It doesn't take visitors' own questions unless you set `SCOUT_LIVE_QUESTIONS` to `1` in Railway. While that's off, the question box is hidden, the server refuses any question sent to it anyway, and the daily limits below never come into play. The only spending is when you record the saved questions yourself (see below).
+
+If you switch visitors' own questions on, every demo question costs you roughly 7 to 12 US cents (about 6 to 10p), which is an estimate; `/admin/spend` shows the real figure. When `DEMO_MODE=1`:
 
 - **Each visitor** can ask 2 questions a day (`SCOUT_PER_VISITOR_LIMIT`). Visitors are told apart by internet address. Every address in a home's IPv6 block counts as one visitor.
-- **Everyone together** can ask `SCOUT_DAILY_LIMIT` questions a day. This is the real budget control.
+- **A monthly budget:** Scout adds up what every Claude reply actually costs (tokens and web searches, at Anthropic's published prices) and stops taking questions before the month's total reaches `SCOUT_MONTHLY_BUDGET_USD` ($10 by default). Visitors are told it's resting until the 1st and offered the example reports. See this month's spend at `/admin/spend` (username `admin`).
+- **Everyone together** can ask `SCOUT_DAILY_LIMIT` questions a day, which spreads the budget across the month.
 - **Only one question runs at a time.** Anyone else is asked to try again in a minute, and that doesn't use up their question.
+- **Saved questions are free.** Visitors can replay the saved questions as often as they like without using their question for the day (see below).
 - **Questions must be 10 to 300 characters.**
-- **Scout works with less effort:** 3 researchers, 3 web searches each, and no rewrite after the fact-check.
+- **Scout works with less effort, using the cheaper model:** Claude Haiku does every job (the planner, researchers, writer and fact-checker), with 3 researchers, 2 web searches and 4 turns each, a shorter report, and no rewrite after the fact-check. Outside the demo, Scout uses Claude Sonnet for planning, writing and checking, and searches more.
 - **The researchers stop after 90 seconds.** If a question has taken over 3 minutes by the time its report is written, the final fact-check is skipped. A slow reply from Claude is retried once at most.
 - **Visitors need cookies switched on.** A visitor whose browser blocks them is told so before their question counts.
 - **The limits reset at midnight UTC.**
@@ -55,13 +60,22 @@ Visitors are told about the limits in plain words. When a limit is reached, the 
 
 **Privacy:** visitors are counted by a one-way code made from their internet address, the date and the secret salt. The code is wiped once its day is over, and raw addresses are never stored. Each visitor sees only their own questions. Questions and reports are deleted after 30 days. The details are at `/privacy`.
 
-## Make the example reports (about 75 US cents, once)
+## Saved questions: free replays for visitors
+
+The demo page offers six **saved questions** in a dropdown. Each one was researched once, for real. A visitor who picks one watches Scout work through it step by step, at the pace it really happened (sped up if it took longer than 40 seconds), then reads the report. Replays never call Claude, cost nothing, and don't use the visitor's question for the day, so people can watch as many as they like. The first three are also the website's example reports, at `/examples/<name>`.
+
+**To record them** (about 10 US cents each, so about 60 cents for all six, counted in the month's demo budget):
+
+1. Open `https://<your site>/admin/recordings` and sign in with the username `admin` and your `SCOUT_ADMIN_PASSWORD`.
+2. Press **Record the 6 missing questions**. Each one takes a minute or two, and the page refreshes itself until they're done.
+
+They're kept in the demo's database on the Railway volume, so they survive redeploys. A question that isn't recorded yet doesn't appear in the dropdown. Press **Record again** next to a question when its answer might have gone out of date. To change the questions themselves, edit the list in `scout/examples.py`.
+
+You can also make them on your own computer instead, which saves them as files in `scout/static/examples/` for you to commit (the live site uses its own recording first, if it has one):
 
 ```bash
 python scripts/make_examples.py
 ```
-
-This researches the three website questions with the real API and the demo's settings, and asks before it spends anything. It saves the reports to `scout/static/examples/`. Commit those files so the website can show them.
 
 ## The free book (PDF and EPUB)
 
@@ -83,7 +97,7 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 
 ## Deploying the demo on Railway
 
-1. **Make a separate API key for the demo.** In the Claude Console, create a workspace just for the demo (for example "Scout demo"), set a **monthly spend limit** on it of $25, which is about £20, and create an API key in that workspace. Then a busy day, a bug or a leaked key can never cost more than that, and you can revoke the demo key without breaking your own work.
+1. **Make a separate API key for the demo.** In the Claude Console, create a workspace just for the demo (for example "Scout demo"), set a **monthly spend limit** on it of $10 (the same as `SCOUT_MONTHLY_BUDGET_USD`), and create an API key in that workspace. Then a busy day, a bug or a leaked key can never cost more than that, and you can revoke the demo key without breaking your own work.
 2. **Create the service.** In Railway, start a new project from this GitHub repository. Railway reads the `Procfile` to start Scout.
 3. **Add a volume** to the service (right-click the service → Attach volume), mounted at `/data`. This keeps the database when Railway redeploys.
 4. **Set the variables** in the service's Variables tab:
@@ -92,12 +106,14 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
    |---|---|
    | `ANTHROPIC_API_KEY` | The demo key from step 1 |
    | `DEMO_MODE` | `1` |
-   | `SCOUT_DAILY_LIMIT` | `2`. That's about £17 a month at worst, inside a £20 budget. |
-   | `SCOUT_PER_VISITOR_LIMIT` | `1` is recommended at this budget, so two different people can try it each day. The default is `2`, which would let the first visitor use the whole day's questions. |
+   | `SCOUT_DAILY_LIMIT` | `3`. At about 10 cents a question that's around $9 a month at worst, and the $10 monthly budget stops it anyway. |
+   | `SCOUT_PER_VISITOR_LIMIT` | `1` is recommended, so each person gets one question a day and three different people can try it. The default is `2`. |
    | `SCOUT_MAX_CONCURRENT` | `1` |
    | `SCOUT_IP_SALT` | A long random string. Make one with the command below this table. |
    | `SCOUT_DB` | `/data/scout.db`. This is required: without it, the daily counts would start again every time Scout restarts, and your list of readers would be lost. |
-   | `SCOUT_ADMIN_PASSWORD` | A long password of your own, for downloading your list of readers from `/admin/signups.csv`. |
+   | `SCOUT_ADMIN_PASSWORD` | A long password of your own, for downloading your list of readers from `/admin/signups.csv` and seeing the demo's spend at `/admin/spend`. |
+   | `SCOUT_MONTHLY_BUDGET_USD` | `10`. The demo stops taking questions before it spends this much in a month. |
+   | `SCOUT_LIVE_QUESTIONS` | Leave it out, or `0`, and visitors can only watch the saved questions, so the demo spends nothing. `1` lets visitors ask their own questions, within the limits above. |
 
    To make the salt, run this and paste the result into Railway:
    ```bash
@@ -108,7 +124,7 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 5. **Keep it to one replica** (Settings → Deploy). The limits are counted in one process and one database file, so a second copy would double them.
 6. **Get a web address** (Settings → Networking → Generate Domain).
 
-**Worst-case cost** is roughly `SCOUT_DAILY_LIMIT` × 35 US cents a day. That is an estimate, so check the real figure in the Claude Console after the first few days. The Console spend limit from step 1 is the only hard ceiling, so keep it at or below your budget.
+**Cost:** the demo stops itself before `SCOUT_MONTHLY_BUDGET_USD` (it keeps 50 cents of headroom so the last question can finish). Each question costs roughly 7 to 12 US cents, so $10 is about 100 questions a month. Keep the Console spend limit from step 1 at the same figure: it's Anthropic's own hard stop, and catches anything Scout's own count might miss.
 
 ### Before you go live
 

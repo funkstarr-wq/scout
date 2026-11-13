@@ -10,7 +10,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - Try the live demo for free: `DEMO_MODE=1 SCOUT_FAKE=1 SCOUT_IP_SALT=practice-salt-for-my-computer uvicorn scout.server:app --reload`
 - Run tests (free, no API calls): `python -m pytest -q`
 - Run the evaluation (costs money, calls Claude): `python -m evals.run_eval --limit 3`
-- Make the website's example reports (costs money, calls Claude): `python scripts/make_examples.py`
+- Make the saved questions (costs money, calls Claude): `python scripts/make_examples.py`, or the button on the live site's `/admin/recordings`
 - Rebuild the free book (free): `python scripts/build_book.py [new-manuscript.doc]` (needs LibreOffice and `requirements-book.txt`)
 
 ## Layout
@@ -19,14 +19,15 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - `scout/prompts/*.md` every prompt Scout uses, as plain text
 - `scout/server.py` web server: the website at `/`, Scout at `/demo`, example reports, privacy note, live demo limits
 - `scout/static/index.html` the Scout page (served at /demo); `scout/static/site/` the book's website
-- `scout/static/example.html`, `privacy.html`, `coming_soon.html`, `not_found.html` the other pages
-- `scout/examples.py` the three example reports; `scripts/make_examples.py` makes them
+- `scout/static/example.html`, `privacy.html`, `coming_soon.html`, `not_found.html`, `admin_recordings.html` the other pages
+- `scout/examples.py` the saved questions: real runs, recorded once, that the demo replays for free and the website shows as example reports; record them at `/admin/recordings` (costs money) or with `scripts/make_examples.py`
 - `book/` the free book: the PDF and EPUB readers download, plus the EPUB filter and styles; `Building-Scout.docx` is the manuscript
 - `scout/static/book_ready.html`, `book_problem.html` the pages after the free-book form; sign-ups are in `store.py`
 - `scout/static/fonts/` Outfit, the cover's typeface (SIL Open Font Licence); every page uses it
 - `scout/store.py` SQLite storage; `scout/mcp_server.py` Scout as an MCP tool
+- `scout/spend.py` prices every Claude reply so the demo stops at `SCOUT_MONTHLY_BUDGET_USD`; `/admin/spend` shows the month's total
 - `tests/` uses a fake Claude (`scout/fake_llm.py`), so tests never need an API key; `SCOUT_FAKE=1` uses it in the app
-- `scout/config.py` `DEMO_MODE=1` turns on the public live demo: no password, lower effort, per-visitor and daily limits
+- `scout/config.py` `DEMO_MODE=1` turns on the public live demo: no password, lower effort, per-visitor and daily limits; visitors only watch saved questions unless `SCOUT_LIVE_QUESTIONS=1`
 - `evals/` the exam: questions plus an AI grader
 
 ## Rules
