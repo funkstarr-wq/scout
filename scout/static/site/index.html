@@ -332,6 +332,9 @@
   .ticks li::before { content: ""; position: absolute; left: 0; top: 0.32em; width: 1.15rem; height: 1.15rem; border-radius: 50%;
                       background: var(--paper); border: 4px solid var(--text); }
   .ticks li:nth-child(3n+1)::before { background: var(--blue-bright); }
+  .setup-intro { font-weight: 500; color: var(--muted); margin: -0.2rem 0 0; }
+  .setup-links { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; margin-top: 0.3rem; font-size: 0.98rem; font-weight: 700; }
+  .setup-links a::after { content: " \2192"; content: " \2192" / ""; }  /* the arrow is decoration: screen readers skip it */
 
   /* ---------- Example reports ---------- */
   .cards { list-style: none; padding: 0; margin: 2.2rem 0 1.6rem; display: grid; gap: 1.1rem; }
@@ -679,12 +682,18 @@
       </div>
       <div>
         <h2 id="need">What you'll need</h2>
+        <p class="setup-intro">Start now with the setup. Each link opens the right page.</p>
         <ul class="ticks">
-          <li><strong>A computer</strong> running macOS, Windows 10 or 11, or Linux.</li>
-          <li><strong>A Claude subscription</strong> (Pro or Max) or an Anthropic Console account, to use Claude Code.</li>
-          <li><strong>A little API credit.</strong> Each research question costs a few pence; ten pounds is plenty for the whole book.</li>
-          <li><strong>A free GitHub account,</strong> for saving your work and putting Scout online.</li>
-          <li><strong>Patience for the first two chapters.</strong> Setting up is the dullest part, and it's over quickly.</li>
+          <li><strong>A computer</strong> running macOS, Windows 10 or 11, or Linux.
+            <span class="setup-links"><a href="https://code.claude.com/docs/en/setup#system-requirements" target="_blank" rel="noopener">Check it can run Claude Code<span class="visually-hidden"> (opens in a new tab)</span></a></span></li>
+          <li><strong>A Claude subscription</strong> (Pro or Max) or an Anthropic Console account, to use Claude Code.
+            <span class="setup-links"><a href="https://claude.com/pricing" target="_blank" rel="noopener">Compare Claude plans<span class="visually-hidden"> (opens in a new tab)</span></a><a href="https://platform.claude.com/" target="_blank" rel="noopener">Open the Anthropic Console<span class="visually-hidden"> (opens in a new tab)</span></a></span></li>
+          <li><strong>A little API credit.</strong> Each research question costs a few pence; ten pounds is plenty for the whole book.
+            <span class="setup-links"><a href="https://platform.claude.com/settings/billing" target="_blank" rel="noopener">Add credit<span class="visually-hidden"> (opens in a new tab)</span></a><a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">Create an API key<span class="visually-hidden"> (opens in a new tab)</span></a></span></li>
+          <li><strong>A free GitHub account,</strong> for saving your work and putting Scout online.
+            <span class="setup-links"><a href="https://github.com/signup" target="_blank" rel="noopener">Sign up for GitHub<span class="visually-hidden"> (opens in a new tab)</span></a></span></li>
+          <li><strong>Patience for the first two chapters.</strong> Setting up is the dullest part, and it's over quickly.
+            <span class="setup-links"><a href="https://code.claude.com/docs/en/quickstart" target="_blank" rel="noopener">Install Claude Code<span class="visually-hidden"> (opens in a new tab)</span></a></span></li>
         </ul>
       </div>
     </div>

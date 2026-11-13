@@ -134,3 +134,13 @@ def test_make_examples_uses_the_demo_settings_and_asks_before_spending():
                             input="no\n", capture_output=True, text=True)
     assert "up to 3 researchers, 3 searches each, no rewrite" in result.stdout
     assert "Nothing was spent" in result.stdout
+
+
+def test_what_you_need_links_to_each_setup_step():
+    page = client.get("/").text
+    for url in ("https://code.claude.com/docs/en/setup#system-requirements", "https://claude.com/pricing",
+                "https://platform.claude.com/", "https://platform.claude.com/settings/billing",
+                "https://platform.claude.com/settings/keys", "https://github.com/signup",
+                "https://code.claude.com/docs/en/quickstart"):
+        assert f'href="{url}" target="_blank" rel="noopener"' in page, url
+    assert "Start now with the setup" in page
