@@ -51,6 +51,10 @@ def _whole_number(name: str, default: int, smallest: int = 0) -> int:
 DEMO_MODE = _switch("DEMO_MODE")
 # A pretend Claude for trying the app for free. Answers are made up; the page says so.
 FAKE_MODE = _switch("SCOUT_FAKE")
+# Whether demo visitors may ask their own questions, which costs the owner money. It is off
+# unless SCOUT_LIVE_QUESTIONS=1, so the demo only replays saved questions and spends nothing.
+# Your own copy (DEMO_MODE off) always takes questions.
+LIVE_QUESTIONS = _switch("SCOUT_LIVE_QUESTIONS") if DEMO_MODE else True
 
 # The lead model plans, writes and reviews. The worker model does the searching.
 # The live demo uses the cheaper Haiku for both, because every question costs the owner money:

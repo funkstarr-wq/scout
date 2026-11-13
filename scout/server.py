@@ -172,6 +172,7 @@ REFUSALS = {
     "busy": (503, "Scout is busy with someone else's question. Please try again in a minute."),
     "budget": (429, "The demo has used up this month's research budget, so it's resting until the 1st. "
                     "Meanwhile, you can watch Scout answer one of the saved questions, free."),
+    "saved_only": (403, "The demo shows saved questions only. Pick one above to watch Scout at work."),
 }
 NO_COOKIE = ("Scout needs a cookie to show you your report. Please allow cookies for this site, "
              "reload the page and try again.")
@@ -240,7 +241,7 @@ def site_image(name: str):
 @app.get("/demo", dependencies=[Depends(require_password)])
 def demo(request: Request):
     page = FileResponse(STATIC / "index.html")
-    if config.DEMO_MODE:
+    if config.DEMO_MODE and config.LIVE_QUESTIONS:  # the cookie is only needed to show visitors their own questions
         visitor_id(request, page)
     return page
 
@@ -513,6 +514,7 @@ def settings():
     return {
         "demo": config.DEMO_MODE,
         "fake": config.FAKE_MODE,
+        "live": config.LIVE_QUESTIONS,  # off: visitors can only watch the saved questions
         "max_chars": max_question_chars(),
         "per_visitor": config.PER_VISITOR_LIMIT,
         # "recorded" ones have a saved run the page can replay, which costs nothing
@@ -530,6 +532,8 @@ def example_data(name: str):
 
 @app.post("/api/research", dependencies=[Depends(require_password)])
 def start_research(body: Question, background: BackgroundTasks, request: Request):
+    if not config.LIVE_QUESTIONS:  # the demo is replaying saved questions only, so nothing is spent
+        raise refusal("saved_only")
     question = body.question.strip()
     longest = max_question_chars()
     if not config.QUESTION_MIN_CHARS <= len(question) <= longest:

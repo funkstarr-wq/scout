@@ -123,3 +123,34 @@ def test_recording_stops_when_the_months_budget_is_used(demo, admin, no_files, m
     assert press("all").status_code == 303
     assert examples.recorded() == []
     assert "budget is used up" in client.get("/admin/recordings", auth=ADMIN).text
+
+
+# ------------------------------------------------- saved questions only
+def test_the_real_demo_takes_no_questions_of_its_own_unless_switched_on():
+    from tests.test_demo import run_python
+
+    code = "from scout import config; print(config.LIVE_QUESTIONS)"
+    assert run_python(code, DEMO_MODE="1", SCOUT_LIVE_QUESTIONS="").stdout.strip() == "False"
+    assert run_python(code, DEMO_MODE="1", SCOUT_LIVE_QUESTIONS="1").stdout.strip() == "True"
+    assert run_python(code, DEMO_MODE="0", SCOUT_LIVE_QUESTIONS="").stdout.strip() == "True"  # your own copy
+    typo = run_python(code, DEMO_MODE="1", SCOUT_LIVE_QUESTIONS="maybe")
+    assert typo.returncode != 0 and "SCOUT_LIVE_QUESTIONS must be 1 (on) or 0 (off)" in typo.stderr
+
+
+def test_with_live_questions_off_nothing_can_be_asked_or_spent(demo, no_files, monkeypatch):
+    monkeypatch.setattr(config, "LIVE_QUESTIONS", False)
+    llm.set_client(NoClaudeAllowed())
+    page = client.get("/demo")
+    assert "scout_visitor" not in page.headers.get("set-cookie", "")  # nothing to remember about visitors
+    assert client.get("/api/settings").json()["live"] is False
+    response = client.post("/api/research", json={"question": "Does drinking coffee affect sleep?"})
+    assert response.status_code == 403
+    assert "saved questions only" in response.json()["detail"]
+    assert store.count_jobs_today() == 0
+    assert store.spend_this_month() == 0
+
+
+def test_the_page_hides_the_question_box_until_live_questions_are_on():
+    page = client.get("/demo").text
+    assert '<form id="ask" class="card" hidden>' in page
+    assert 'id="saved-banner"' in page and 'id="no-saved"' in page

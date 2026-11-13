@@ -36,11 +36,13 @@ This runs Scout exactly as the public demo will, but with a pretend Claude, so n
 DEMO_MODE=1 SCOUT_FAKE=1 SCOUT_IP_SALT=practice-salt-for-my-computer uvicorn scout.server:app --reload
 ```
 
-Open http://127.0.0.1:8000/demo and ask a question twice. The third time, you're told you've used your questions for today, with links to the example reports.
+Open http://127.0.0.1:8000/demo. Like the real demo, it only offers the saved questions, and says they're being prepared until some are recorded. To try visitors asking their own questions, put `SCOUT_LIVE_QUESTIONS=1` at the start of the command. Then ask a question twice: the third time, you're told you've used your questions for today, and offered the saved questions.
 
 ## How the live demo protects your money
 
-Every demo question costs you roughly 7 to 12 US cents (about 6 to 10p), which is an estimate; `/admin/spend` shows the real figure. When `DEMO_MODE=1`:
+**The demo only shows the saved questions, so visitors spend nothing.** It doesn't take visitors' own questions unless you set `SCOUT_LIVE_QUESTIONS` to `1` in Railway. While that's off, the question box is hidden, the server refuses any question sent to it anyway, and the daily limits below never come into play. The only spending is when you record the saved questions yourself (see below).
+
+If you switch visitors' own questions on, every demo question costs you roughly 7 to 12 US cents (about 6 to 10p), which is an estimate; `/admin/spend` shows the real figure. When `DEMO_MODE=1`:
 
 - **Each visitor** can ask 2 questions a day (`SCOUT_PER_VISITOR_LIMIT`). Visitors are told apart by internet address. Every address in a home's IPv6 block counts as one visitor.
 - **A monthly budget:** Scout adds up what every Claude reply actually costs (tokens and web searches, at Anthropic's published prices) and stops taking questions before the month's total reaches `SCOUT_MONTHLY_BUDGET_USD` ($10 by default). Visitors are told it's resting until the 1st and offered the example reports. See this month's spend at `/admin/spend` (username `admin`).
@@ -111,6 +113,7 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
    | `SCOUT_DB` | `/data/scout.db`. This is required: without it, the daily counts would start again every time Scout restarts, and your list of readers would be lost. |
    | `SCOUT_ADMIN_PASSWORD` | A long password of your own, for downloading your list of readers from `/admin/signups.csv` and seeing the demo's spend at `/admin/spend`. |
    | `SCOUT_MONTHLY_BUDGET_USD` | `10`. The demo stops taking questions before it spends this much in a month. |
+   | `SCOUT_LIVE_QUESTIONS` | Leave it out, or `0`, and visitors can only watch the saved questions, so the demo spends nothing. `1` lets visitors ask their own questions, within the limits above. |
 
    To make the salt, run this and paste the result into Railway:
    ```bash

@@ -263,6 +263,13 @@
       <span><strong>Live demo. Limited questions per day. Questions are stored.</strong>
       <small>Please don't include personal details. <a href="/privacy">What's stored and why</a></small></span>
     </p>
+    <p class="banner" id="saved-banner" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#2e5bd8" /><path d="M12 10.5v6M12 7.2v.1" stroke="#fff" stroke-width="2.4" stroke-linecap="round" /></svg>
+      <span><strong>Every question here was researched by Scout for real, then saved.</strong>
+      <small>Pick one to watch the team work through it, step by step. <a href="/#free">Get the book free</a> to build your own Scout and ask it anything.</small></span>
+    </p>
+    <p class="message notice" id="no-saved" hidden>The saved questions are being prepared. Please check back soon,
+      or <a href="/#free">get the book free</a> to build your own Scout.</p>
     <p class="banner fake" id="fake-banner" hidden>
       FAKE ANSWERS: Scout is running with a pretend Claude (SCOUT_FAKE=1). Nothing on this page is real research.
     </p>
@@ -279,7 +286,7 @@
     </section>
     <p class="or" id="or" hidden>or ask your own</p>
 
-    <form id="ask" class="card">
+    <form id="ask" class="card" hidden>
       <label class="ask-label" for="question">What would you like Scout to research?</label>
       <textarea id="question" placeholder="For example: How do heat pumps compare with gas boilers on running costs in the UK?" required></textarea>
       <div class="row">
@@ -302,7 +309,7 @@
       <ul id="example-links"></ul>
     </div>
 
-    <section class="history" aria-labelledby="history-title">
+    <section class="history" id="history-section" aria-labelledby="history-title" hidden>
       <h2 id="history-title">Recent questions</h2>
       <ol id="history"></ol>
     </section>
@@ -321,7 +328,7 @@
   const $ = (id) => document.getElementById(id);
   const esc = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;");
   let timer = null;
-  let settings = { demo: false, fake: false, max_chars: 500, examples: [] };
+  let settings = { demo: false, fake: false, live: false, max_chars: 500, examples: [] };
   let replay = 0;        // goes up by one whenever a replay or a live question starts, so an older replay stops
   let skipping = false;  // the visitor pressed "Skip to the report"
   let wake = null;       // ends the current pause early
@@ -368,13 +375,26 @@
 
   async function loadSettings() {
     try { settings = await api("/api/settings"); } catch (err) { /* keep the defaults */ }
-    $("demo-banner").hidden = !settings.demo;
+    // With live questions off, visitors only watch the saved questions: there's nothing to ask or store.
+    $("demo-banner").hidden = !settings.demo || !settings.live;
+    $("saved-banner").hidden = !settings.demo || settings.live;
     $("back").hidden = !settings.demo;
+    $("ask").hidden = $("history-section").hidden = !settings.live;
+    $("no-saved").hidden = settings.live || saved().length > 0;
+    document.querySelector(".saved .free").hidden = !settings.live;
+    if (!settings.live) {
+      document.querySelector(".kicker").textContent = "Demo";
+      document.querySelector("h1").innerHTML = "Watch <b>Scout</b>";
+      document.querySelector(".lede").textContent = "Pick a question and watch a team of research agents search the web and write a cited answer.";
+      document.querySelector(".saved .hint").textContent = "Scout has already researched these for real. " +
+        "Watch the team work through one, step by step, as it happened.";
+    }
     $("fake-banner").hidden = !settings.fake;
     $("question").maxLength = settings.max_chars;
     if (settings.demo) $("history-title").textContent = "Your recent questions";
     $("saved-pick").innerHTML = saved().map((e) => `<option value="${e.name}">${esc(e.question)}</option>`).join("");
-    $("saved").hidden = $("or").hidden = !saved().length;
+    $("saved").hidden = !saved().length;
+    $("or").hidden = !saved().length || !settings.live;
     updateCount();
   }
 
@@ -558,8 +578,10 @@
 
   $("question").addEventListener("input", updateCount);
   window.addEventListener("hashchange", route);
-  loadSettings().then(route);
-  loadHistory();
+  loadSettings().then(() => {
+    route();
+    if (settings.live) loadHistory();
+  });
 </script>
 </body>
 </html>

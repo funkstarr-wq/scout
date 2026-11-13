@@ -27,7 +27,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - `scout/store.py` SQLite storage; `scout/mcp_server.py` Scout as an MCP tool
 - `scout/spend.py` prices every Claude reply so the demo stops at `SCOUT_MONTHLY_BUDGET_USD`; `/admin/spend` shows the month's total
 - `tests/` uses a fake Claude (`scout/fake_llm.py`), so tests never need an API key; `SCOUT_FAKE=1` uses it in the app
-- `scout/config.py` `DEMO_MODE=1` turns on the public live demo: no password, lower effort, per-visitor and daily limits
+- `scout/config.py` `DEMO_MODE=1` turns on the public live demo: no password, lower effort, per-visitor and daily limits; visitors only watch saved questions unless `SCOUT_LIVE_QUESTIONS=1`
 - `evals/` the exam: questions plus an AI grader
 
 ## Rules
