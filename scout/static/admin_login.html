@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Sign in · Building Scout</title>
+  <style>
+    @font-face { font-family: "Outfit"; font-weight: 400; font-display: swap; src: url("/fonts/outfit-latin-400-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 500; font-display: swap; src: url("/fonts/outfit-latin-500-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 700; font-display: swap; src: url("/fonts/outfit-latin-700-normal.woff2") format("woff2"); }
+    :root { --clay: #da7757; --black: #141414; --paper: #fff8f1; --ink: #1e1c19; --muted: #59544b; --rule: #ddd3c1;
+            --accent: #1f3fa6; --problem: #a8482a; --problem-bg: #fde8e6; --card: #fff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper: #171412; --ink: #efe7d8; --muted: #b8b1a4; --rule: #3a342e; --accent: #a9b8ff;
+              --problem: #ffb4ab; --problem-bg: #3b1d1a; --card: #221e1b; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1.0625rem/1.6 "Outfit", system-ui, sans-serif; }
+    .band { background: var(--clay); color: var(--black); padding: 18px 16px; }
+    .band a { color: var(--black); font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+    .band strong { color: #1d3a9c; }
+    main { max-width: 440px; margin: 0 auto; padding: 48px 16px 80px; }
+    h1 { font-size: 2rem; line-height: 1.2; color: var(--accent); margin: 0 0 8px; }
+    p { margin: 0 0 16px; }
+    .muted { color: var(--muted); }
+    form { background: var(--card); border: 2.5px solid var(--ink); border-radius: 18px; padding: 20px; margin-top: 20px; }
+    label { display: block; font-weight: 700; margin-bottom: 6px; }
+    input[type="password"], input[type="text"] {
+      width: 100%; min-height: 48px; padding: 10px 14px; font: 1.0625rem "Outfit", system-ui, sans-serif; color: var(--ink);
+      background: var(--paper); border: 2.5px solid var(--ink); border-radius: 12px; }
+    .show { display: flex; align-items: center; gap: 8px; font-weight: 400; font-size: 0.95rem; margin: 10px 0 16px; }
+    .show input { width: 20px; height: 20px; margin: 0; }
+    button { font: 600 1rem "Outfit", system-ui, sans-serif; min-height: 48px; width: 100%; padding: 10px 20px; border-radius: 999px;
+             background: var(--black); color: #fff; border: 2.5px solid var(--black); cursor: pointer; }
+    @media (prefers-color-scheme: dark) { button { background: #efe7d8; color: #141414; border-color: #efe7d8; } }
+    .problem { background: var(--problem-bg); color: var(--problem); border: 2px solid currentColor; border-radius: 12px;
+               padding: 10px 14px; font-weight: 500; }
+    .problem:empty { display: none; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  </style>
+</head>
+<body>
+<header class="band"><a href="/">Building <strong>Scout</strong></a></header>
+<main>
+  <h1>Sign in</h1>
+  <p class="muted">For the site's owner: recording the saved questions, the demo's spend and your readers list.</p>
+  <p class="problem" role="alert">{{MESSAGE}}</p>
+  <form method="post" action="/admin/login">
+    <input type="hidden" name="next" value="{{NEXT}}">
+    <label for="password">Admin password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required autofocus
+           autocapitalize="off" autocorrect="off" spellcheck="false">
+    <label class="show"><input type="checkbox" id="show"> Show password</label>
+    <button type="submit">Sign in</button>
+  </form>
+  <p class="muted" style="margin-top: 16px">You'll stay signed in on this device for 12 hours.</p>
+</main>
+<script>
+  document.getElementById("show").addEventListener("change", (event) => {
+    document.getElementById("password").type = event.target.checked ? "text" : "password";
+  });
+</script>
+</body>
+</html>

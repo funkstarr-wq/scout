@@ -5,6 +5,7 @@ Pages:
     /book              the free-book form posts here; download links are /book/<token>/pdf or /epub
     /admin/signups.csv the list of readers who asked for the book (needs SCOUT_ADMIN_PASSWORD)
     /admin/recordings  where the owner records the saved questions (needs SCOUT_ADMIN_PASSWORD)
+    /admin/login       the owner signs in here, with SCOUT_ADMIN_PASSWORD
     /demo              the Scout page itself (password-protected unless DEMO_MODE is on)
     /examples/<name>   the saved questions' finished reports (always public, never call Claude)
     /privacy           what the live demo stores (always public)
@@ -19,10 +20,11 @@ import logging
 import re
 import secrets
 import threading
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, quote
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
@@ -341,16 +343,143 @@ def download_book(token: str, edition: str):
     return FileResponse(path, media_type=media_type, filename=filename, headers={"Cache-Control": "private, no-store"})
 
 
-def require_admin(credentials: HTTPBasicCredentials | None = Depends(basic)):
-    """The owner's pages. Username: admin, password: SCOUT_ADMIN_PASSWORD. Without one, they don't exist."""
+# ------------------------------------------------------- the owner's sign-in
+# The owner signs in on a normal web page with SCOUT_ADMIN_PASSWORD and gets a cookie that lasts
+# ADMIN_SIGN_IN_HOURS. (The browser's own pop-up sign-in box doesn't appear in many phone and
+# in-app browsers.) Programs can still send the username admin and the password with each request.
+ADMIN_COOKIE = "scout_admin"
+ADMIN_SIGN_IN_HOURS = 12
+ADMIN_PAGES = ("/admin/recordings", "/admin/spend", "/admin/signups.csv")
+WRONG_PASSWORD_LIMIT = 10    # this many wrong passwords...
+WRONG_PASSWORD_MINUTES = 15  # ...within this many minutes pauses signing in, so nobody can guess forever
+
+
+class SignInNeeded(Exception):
+    """Someone opened an owner's page without signing in: send them to the sign-in page."""
+
+    def __init__(self, page: str):
+        self.page = page
+
+
+class WrongPasswords:
+    """Remembers when recent wrong admin passwords were tried."""
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.times: list[float] = []
+
+    def _recent(self) -> list[float]:
+        cutoff = time.monotonic() - WRONG_PASSWORD_MINUTES * 60
+        self.times = [t for t in self.times if t > cutoff]
+        return self.times
+
+    def paused(self) -> bool:
+        with self.lock:
+            return len(self._recent()) >= WRONG_PASSWORD_LIMIT
+
+    def add(self) -> None:
+        with self.lock:
+            self._recent().append(time.monotonic())
+
+
+wrong_passwords = WrongPasswords()
+
+
+def is_admin_password(password: str) -> bool:
+    """True for the right password, unless signing in is paused after too many wrong ones."""
+    if wrong_passwords.paused():
+        return False
+    if secrets.compare_digest(password.encode(), config.ADMIN_PASSWORD.encode()):
+        return True
+    wrong_passwords.add()
+    return False
+
+
+def admin_ticket(expires: int) -> str:
+    """The signed-in cookie: when it runs out, plus a code only the password can make.
+    Nobody can forge one, and changing the password signs everyone out."""
+    code = hmac.new(config.ADMIN_PASSWORD.encode(), f"signed in until {expires}".encode(), hashlib.sha256).hexdigest()
+    return f"{expires}.{code}"
+
+
+def signed_in(request: Request) -> bool:
+    ticket = request.cookies.get(ADMIN_COOKIE, "")
+    expires = ticket.partition(".")[0]
+    if not (expires.isdigit() and len(expires) < 15 and int(expires) > time.time()):
+        return False
+    return secrets.compare_digest(ticket.encode(), admin_ticket(int(expires)).encode())
+
+
+def require_admin(request: Request, credentials: HTTPBasicCredentials | None = Depends(basic)):
+    """The owner's pages. Without SCOUT_ADMIN_PASSWORD, they don't exist."""
     if not config.ADMIN_PASSWORD:
         raise HTTPException(404)
-    ok = credentials is not None and secrets.compare_digest(
-        credentials.username.encode() + b":" + credentials.password.encode(),
-        b"admin:" + config.ADMIN_PASSWORD.encode(),
-    )
-    if not ok:
+    if signed_in(request):
+        return
+    if credentials is None:
+        raise SignInNeeded(request.url.path)
+    right = secrets.compare_digest(credentials.username.encode(), b"admin") & is_admin_password(credentials.password)
+    if not right:
         raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="Building Scout admin"'})
+
+
+@app.exception_handler(SignInNeeded)
+async def go_and_sign_in(_request: Request, exc: SignInNeeded):
+    return RedirectResponse(f"/admin/login?next={quote(exc.page, safe='/')}", status_code=303)
+
+
+def is_https(request: Request) -> bool:
+    """Railway's front door handles https and passes the request on, saying so in a header."""
+    return request.headers.get("x-forwarded-proto", request.url.scheme).split(",")[0].strip() == "https"
+
+
+def sign_in_page(next_page: str, message: str = "", status_code: int = 200) -> HTMLResponse:
+    page = fill_page("admin_login.html", status_code, NEXT=next_page, MESSAGE=message)
+    page.headers["Cache-Control"] = "no-store"
+    return page
+
+
+@app.get("/admin")
+def admin_home():
+    return RedirectResponse("/admin/recordings", status_code=303)
+
+
+@app.get("/admin/login")
+def admin_login_page(request: Request, next: str = ""):
+    if not config.ADMIN_PASSWORD:
+        raise HTTPException(404)
+    page = next if next in ADMIN_PAGES else "/admin/recordings"  # never send the owner anywhere else
+    if signed_in(request):
+        return RedirectResponse(page, status_code=303)
+    return sign_in_page(page)
+
+
+@app.post("/admin/login")
+async def admin_sign_in(request: Request):
+    if not config.ADMIN_PASSWORD:
+        raise HTTPException(404)
+    body = await request.body()
+    if len(body) > LONGEST_FORM:
+        raise HTTPException(413, "That form is too large.")
+    form = {k: v[0] for k, v in parse_qs(body.decode("utf-8", "replace"), keep_blank_values=True).items()}
+    page = form.get("next", "") if form.get("next", "") in ADMIN_PAGES else "/admin/recordings"
+    if wrong_passwords.paused():
+        return sign_in_page(page, f"Too many wrong passwords. Please wait {WRONG_PASSWORD_MINUTES} minutes, then try again.", 429)
+    if not is_admin_password(form.get("password", "")):
+        return sign_in_page(page, "That password isn't right. It's the SCOUT_ADMIN_PASSWORD you set in Railway, "
+                                  "and capital letters matter.", 401)
+    response = RedirectResponse(page, status_code=303)
+    expires = int(time.time()) + ADMIN_SIGN_IN_HOURS * 3600
+    response.set_cookie(ADMIN_COOKIE, admin_ticket(expires), max_age=ADMIN_SIGN_IN_HOURS * 3600, path="/admin",
+                        httponly=True, samesite="lax", secure=is_https(request))
+    return response
+
+
+@app.get("/admin/logout")
+def admin_sign_out():
+    response = RedirectResponse("/", status_code=303)
+    response.delete_cookie(ADMIN_COOKIE, path="/admin")
+    return response
 
 
 @app.get("/admin/spend", dependencies=[Depends(require_admin)])

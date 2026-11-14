@@ -20,7 +20,10 @@
     body { margin: 0; background: var(--paper); color: var(--ink); font: 1.0625rem/1.6 "Outfit", system-ui, sans-serif; }
     .band { background: var(--clay); color: var(--black); padding: 18px 16px; }
     .band a { color: var(--black); font-size: 1.25rem; font-weight: 700; text-decoration: none; }
-    .band strong { color: #1f3fa6; }
+    .band strong { color: #1d3a9c; }
+    .band { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; }
+    .band nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+    .band nav a { font-size: 0.95rem; font-weight: 500; text-decoration: underline; text-underline-offset: 0.18em; }
     main { max-width: 760px; margin: 0 auto; padding: 40px 16px 80px; }
     h1 { font-size: 2rem; line-height: 1.2; color: var(--accent); margin: 0 0 12px; }
     p { margin: 0 0 12px; }
@@ -47,7 +50,8 @@
   </style>
 </head>
 <body>
-<header class="band"><a href="/">Building <strong>Scout</strong></a></header>
+<header class="band"><a href="/">Building <strong>Scout</strong></a>
+  <nav><a href="/admin/signups.csv">Readers list (spreadsheet)</a> <a href="/admin/logout">Sign out</a></nav></header>
 <main>
   <h1>Saved questions</h1>
   <p>These are the questions visitors can pick on the <a href="/demo">demo page</a>. Each one is researched once, for real,
