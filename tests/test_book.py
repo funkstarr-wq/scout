@@ -154,7 +154,9 @@ def test_readers_list_does_not_exist_without_an_admin_password(monkeypatch):
 def test_readers_list_needs_the_admin_password(monkeypatch):
     monkeypatch.setattr(config, "ADMIN_PASSWORD", "long-admin-password")
     ask_for_book(email_ok="yes")
-    assert client.get("/admin/signups.csv").status_code == 401
+    not_signed_in = client.get("/admin/signups.csv", follow_redirects=False)
+    assert not_signed_in.status_code == 303
+    assert not_signed_in.headers["location"] == "/admin/login?next=/admin/signups.csv"
     assert client.get("/admin/signups.csv", auth=("admin", "wrong")).status_code == 401
     assert client.get("/admin/signups.csv", auth=("scout", "long-admin-password")).status_code == 401
     sheet = client.get("/admin/signups.csv", auth=("admin", "long-admin-password"))
