@@ -11,7 +11,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - Run tests (free, no API calls): `python -m pytest -q`
 - Run the evaluation (costs money, calls Claude): `python -m evals.run_eval --limit 3`
 - Make the saved questions (costs money, calls Claude): `python scripts/make_examples.py`, or the button on the live site's `/admin/recordings`
-- Rebuild the free book (free): `python scripts/build_book.py [new-manuscript.doc]` (needs LibreOffice and `requirements-book.txt`)
+- Rebuild the free book (free): `python scripts/build_book.py [new-manuscript.doc] [--epub finished.epub]` (needs LibreOffice and `requirements-book.txt`)
 
 ## Layout
 - `scout/graph.py` the LangGraph workflow: plan -> research (parallel) -> write -> review

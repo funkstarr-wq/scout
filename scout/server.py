@@ -61,6 +61,17 @@ app = FastAPI(title="Scout", lifespan=lifespan)
 basic = HTTPBasic(auto_error=False)
 
 
+@app.middleware("http")
+async def drop_www(request: Request, call_next):
+    """Send www.buildingscout.info to buildingscout.info, so everyone uses one address
+    (and one set of cookies). Any other address is served as it is."""
+    host = request.headers.get("host", "")
+    if host.lower().startswith("www."):
+        target = f"https://{host[4:]}{request.url.path}" + (f"?{request.url.query}" if request.url.query else "")
+        return RedirectResponse(target, status_code=301)
+    return await call_next(request)
+
+
 def require_password(credentials: HTTPBasicCredentials | None = Depends(basic)):
     """If SCOUT_PASSWORD is set, ask the browser for it (username: scout).
 

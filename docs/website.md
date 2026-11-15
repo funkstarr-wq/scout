@@ -37,9 +37,9 @@ readers and how to rebuild the book when the manuscript changes.
 
 ## Its address
 
-The site is live at https://scout-production-aa37f689.up.railway.app. That address is written into
-`index.html` for link previews (the canonical link and the `og:` tags); change it there if the site
-moves to its own domain. There are no Amazon or companion-code links for now.
+The site is live at https://buildingscout.info (bought through Railway, which manages its DNS and
+certificate; `www.` forwards to it). That address is written into `index.html` for link previews
+(the canonical link and the `og:` tags); change it there if the site ever moves. There are no Amazon or companion-code links for now.
 
 ## Preview it on your computer
 

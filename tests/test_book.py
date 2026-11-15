@@ -4,6 +4,7 @@ import html
 import io
 import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -12,6 +13,7 @@ from scout import config, store
 from scout.server import app
 
 client = TestClient(app)
+ROOT = Path(__file__).resolve().parent.parent
 LINKEDIN = "https://www.linkedin.com/in/chris-haworth-98605b27/"
 
 
@@ -189,3 +191,37 @@ def test_the_cover_font_is_served():
 @pytest.mark.parametrize("name", ["OFL.txt", "..%2F..%2Fconfig.py", "outfit-latin-900-normal.woff2", "charis-sil-latin-400-normal.woff2"])
 def test_only_the_font_files_are_served(name):
     assert client.get(f"/fonts/{name}").status_code == 404
+
+
+# ------------------------------------------------------------ building the book
+def load_build_book():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("build_book", ROOT / "scripts" / "build_book.py")
+    script = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(script)
+    return script
+
+
+def test_the_book_script_can_use_a_finished_epub(tmp_path, monkeypatch):
+    import zipfile
+
+    script = load_build_book()
+    monkeypatch.setattr(script, "EPUB", tmp_path / "out.epub")
+    mine = tmp_path / "mine.epub"
+    with zipfile.ZipFile(mine, "w") as epub:
+        epub.writestr("mimetype", "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+        epub.writestr("META-INF/container.xml", "<container/>")
+    script.use_epub(mine)
+    assert (tmp_path / "out.epub").read_bytes() == mine.read_bytes()
+
+
+@pytest.mark.parametrize("content", [b"not a zip file", b""])
+def test_the_book_script_refuses_a_file_that_is_not_an_epub(tmp_path, monkeypatch, content):
+    script = load_build_book()
+    monkeypatch.setattr(script, "EPUB", tmp_path / "out.epub")
+    bad = tmp_path / "bad.epub"
+    bad.write_bytes(content)
+    with pytest.raises(SystemExit):
+        script.use_epub(bad)
+    assert not (tmp_path / "out.epub").exists()

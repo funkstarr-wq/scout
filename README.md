@@ -95,6 +95,10 @@ Then give the script your new manuscript. It accepts a `.doc` or `.docx` saved f
 ```bash
 python scripts/build_book.py ~/Downloads/Building-Scout.doc
 ```
+If you've made the EPUB yourself, give it too, and the script checks it and uses it instead of making one:
+```bash
+python scripts/build_book.py ~/Downloads/Building-Scout.docx --epub ~/Downloads/Building-Scout.epub
+```
 Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Building-Scout.epub`. If the cover changes, also replace `scout/static/site/book-cover.jpg`, which is the EPUB's cover and the website's. Prefer not to install LibreOffice? In Word, choose File → Save As → PDF and save over `book/Building-Scout.pdf`.
 
 **While this repository is public**, anyone can download the book files (and the manuscript) straight from GitHub, without filling in the form. Make the repository private if the form matters to you.
@@ -132,4 +136,4 @@ Commit the changed `Building-Scout.docx`, `book/Building-Scout.pdf` and `book/Bu
 
 ### Before you go live
 
-The site is live at https://scout-production-aa37f689.up.railway.app. If you move it to your own domain, update that address in `scout/static/site/index.html` (it's used for link previews). The privacy note currently asks readers to contact you on LinkedIn; once you have an email address on your domain, put it in the "Questions" section of `scout/static/privacy.html`, since it's how readers ask to stop emails or have their details deleted. The cover is `scout/static/site/book-cover.jpg`. See `docs/website.md`.
+The site is live at https://buildingscout.info, a domain bought through Railway, which looks after its DNS and security certificate. `www.buildingscout.info` forwards there, and Railway's own address, https://scout-production-aa37f689.up.railway.app, still works too. If the address ever changes, update it in `scout/static/site/index.html` (it's used for link previews). The privacy note currently asks readers to contact you on LinkedIn; once you have an email address on your domain, put it in the "Questions" section of `scout/static/privacy.html`, since it's how readers ask to stop emails or have their details deleted. The cover is `scout/static/site/book-cover.jpg`. See `docs/website.md`.
