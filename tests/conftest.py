@@ -12,6 +12,8 @@ def fake_claude(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DEMO_MODE", False)
     monkeypatch.setattr(config, "FAKE_MODE", False)
     monkeypatch.setattr(config, "LIVE_QUESTIONS", True)
+    from scout import server
+    monkeypatch.setattr(server.wrong_passwords, "times", [])  # each test starts with no wrong admin passwords
     client = FakeClient()
     llm.set_client(client)
     yield client

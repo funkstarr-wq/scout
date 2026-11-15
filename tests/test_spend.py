@@ -123,7 +123,7 @@ def test_spend_page_needs_the_admin_password(monkeypatch):
     assert client.get("/admin/spend").status_code == 404
     monkeypatch.setattr(config, "ADMIN_PASSWORD", "long-admin-password")
     monkeypatch.setattr(config, "MONTHLY_BUDGET_USD", 10.0)
-    assert client.get("/admin/spend").status_code == 401
+    assert client.get("/admin/spend", follow_redirects=False).headers["location"] == "/admin/login?next=/admin/spend"
     store.add_spend(2.5)
     page = client.get("/admin/spend", auth=("admin", "long-admin-password")).json()
     assert page["spent_usd"] == 2.5 and page["budget_usd"] == 10.0 and page["accepting_questions"] is True

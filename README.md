@@ -10,7 +10,7 @@ This project also holds the book's website and a public **live demo** of Scout. 
 | `/examples/<name>` | The saved questions' finished reports, which never call Claude |
 | `/privacy` | What the website and the live demo store |
 | `/book` | The free-book form sends readers here, and they get their PDF and EPUB download links |
-| `/admin/recordings` | Where you record the saved questions (username `admin`, password `SCOUT_ADMIN_PASSWORD`) |
+| `/admin/recordings` | Where you record the saved questions. Any `/admin` page first asks you to sign in with `SCOUT_ADMIN_PASSWORD` |
 
 ## Run it on your computer
 
@@ -45,7 +45,7 @@ Open http://127.0.0.1:8000/demo. Like the real demo, it only offers the saved qu
 If you switch visitors' own questions on, every demo question costs you roughly 7 to 12 US cents (about 6 to 10p), which is an estimate; `/admin/spend` shows the real figure. When `DEMO_MODE=1`:
 
 - **Each visitor** can ask 2 questions a day (`SCOUT_PER_VISITOR_LIMIT`). Visitors are told apart by internet address. Every address in a home's IPv6 block counts as one visitor.
-- **A monthly budget:** Scout adds up what every Claude reply actually costs (tokens and web searches, at Anthropic's published prices) and stops taking questions before the month's total reaches `SCOUT_MONTHLY_BUDGET_USD` ($10 by default). Visitors are told it's resting until the 1st and offered the example reports. See this month's spend at `/admin/spend` (username `admin`).
+- **A monthly budget:** Scout adds up what every Claude reply actually costs (tokens and web searches, at Anthropic's published prices) and stops taking questions before the month's total reaches `SCOUT_MONTHLY_BUDGET_USD` ($10 by default). Visitors are told it's resting until the 1st and offered the example reports. See this month's spend at `/admin/spend`.
 - **Everyone together** can ask `SCOUT_DAILY_LIMIT` questions a day, which spreads the budget across the month.
 - **Only one question runs at a time.** Anyone else is asked to try again in a minute, and that doesn't use up their question.
 - **Saved questions are free.** Visitors can replay the saved questions as often as they like without using their question for the day (see below).
@@ -60,13 +60,17 @@ Visitors are told about the limits in plain words. When a limit is reached, the 
 
 **Privacy:** visitors are counted by a one-way code made from their internet address, the date and the secret salt. The code is wiped once its day is over, and raw addresses are never stored. Each visitor sees only their own questions. Questions and reports are deleted after 30 days. The details are at `/privacy`.
 
+## Signing in to your admin pages
+
+Your pages under `/admin` (recording the saved questions, the month's spend, your readers list) ask for `SCOUT_ADMIN_PASSWORD` on a sign-in page, which works in any browser, including those inside apps. You stay signed in on that device for 12 hours, or until you press **Sign out**. Changing the password in Railway signs everyone out. After 10 wrong passwords in 15 minutes, signing in pauses for 15 minutes, so nobody can keep guessing. Programs can still send the username `admin` and the password with each request.
+
 ## Saved questions: free replays for visitors
 
 The demo page offers six **saved questions** in a dropdown. Each one was researched once, for real. A visitor who picks one watches Scout work through it step by step, at the pace it really happened (sped up if it took longer than 40 seconds), then reads the report. Replays never call Claude, cost nothing, and don't use the visitor's question for the day, so people can watch as many as they like. The first three are also the website's example reports, at `/examples/<name>`.
 
 **To record them** (about 10 US cents each, so about 60 cents for all six, counted in the month's demo budget):
 
-1. Open `https://<your site>/admin/recordings` and sign in with the username `admin` and your `SCOUT_ADMIN_PASSWORD`.
+1. Open `https://<your site>/admin/recordings` and sign in with your `SCOUT_ADMIN_PASSWORD`.
 2. Press **Record the 6 missing questions**. Each one takes a minute or two, and the page refreshes itself until they're done.
 
 They're kept in the demo's database on the Railway volume, so they survive redeploys. A question that isn't recorded yet doesn't appear in the dropdown. Press **Record again** next to a question when its answer might have gone out of date. To change the questions themselves, edit the list in `scout/examples.py`.
@@ -81,7 +85,7 @@ python scripts/make_examples.py
 
 The website's **Get the book free** form asks for a first name, surname and email address, plus an optional "email me now and then" box. A reader who fills it in gets download links for the PDF and the EPUB. The links work for 7 days, and asking again gives a fresh pair. Each reader is stored once, by email address, with whether they're happy to get emails and how many times they've downloaded.
 
-**To get your list of readers**, set `SCOUT_ADMIN_PASSWORD` (see the Railway table below) and open `https://<your site>/admin/signups.csv`. Sign in with the username `admin` and that password. It downloads as a spreadsheet. Only email the people marked "yes".
+**To get your list of readers**, set `SCOUT_ADMIN_PASSWORD` (see the Railway table below) and open `https://<your site>/admin/signups.csv`. Sign in with that password. It downloads as a spreadsheet. (The recordings page also has a link to it.) Only email the people marked "yes".
 
 **When the manuscript changes**, rebuild both editions. It's free and doesn't call Claude. The PDF keeps your Word design exactly (cover, title page, contents, running heads): LibreOffice prints it as laid out. The EPUB is made with pandoc. One-off setup: install LibreOffice from https://www.libreoffice.org (on a Mac, `brew install --cask libreoffice` also works), then:
 ```bash

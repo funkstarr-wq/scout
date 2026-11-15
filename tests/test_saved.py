@@ -90,7 +90,7 @@ def test_recordings_page_needs_the_admin_password(no_files, monkeypatch):
     monkeypatch.setattr(config, "ADMIN_PASSWORD", "")
     assert client.get("/admin/recordings", auth=ADMIN).status_code == 404
     monkeypatch.setattr(config, "ADMIN_PASSWORD", "long-admin-password")
-    assert client.get("/admin/recordings").status_code == 401
+    assert client.get("/admin/recordings", follow_redirects=False).status_code == 303  # to the sign-in page
     assert client.get("/admin/recordings", auth=("admin", "wrong")).status_code == 401
     page = client.get("/admin/recordings", auth=ADMIN)
     assert page.status_code == 200
