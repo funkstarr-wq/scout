@@ -10,6 +10,7 @@ Pages:
     /demo              the Scout page itself (password-protected unless DEMO_MODE is on)
     /examples/<name>   the saved questions' finished reports (always public, never call Claude)
     /privacy           what the live demo stores (always public)
+    /robots.txt, /sitemap.xml, /llms.txt   for search engines and AI assistants (see seo.py)
 """
 import csv
 import hashlib
@@ -32,7 +33,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel, Field
 
-from . import config, examples, store
+from . import config, examples, seo, store
 from .graph import run_research
 
 # Refuse to start, with a clear message, if the live demo is missing a safety setting.
@@ -63,14 +64,17 @@ basic = HTTPBasic(auto_error=False)
 
 
 @app.middleware("http")
-async def drop_www(request: Request, call_next):
+async def site_rules(request: Request, call_next):
     """Send www.buildingscout.info to buildingscout.info, so everyone uses one address
-    (and one set of cookies). Any other address is served as it is."""
+    (and one set of cookies), and keep private pages out of search results."""
     host = request.headers.get("host", "")
     if host.lower().startswith("www."):
         target = f"https://{host[4:]}{request.url.path}" + (f"?{request.url.query}" if request.url.query else "")
         return RedirectResponse(target, status_code=301)
-    return await call_next(request)
+    response = await call_next(request)
+    if request.url.path.startswith(seo.PRIVATE_PATHS):
+        response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return response
 
 
 def require_password(credentials: HTTPBasicCredentials | None = Depends(basic)):
@@ -235,7 +239,24 @@ def health():
 
 @app.get("/")
 def home():
-    return FileResponse(SITE / "index.html")
+    page = (SITE / "index.html").read_text(encoding="utf-8")
+    page = page.replace("{{FAQ_HTML}}", seo.faq_html()).replace("{{JSON_LD}}", seo.home_json_ld())
+    return HTMLResponse(page)
+
+
+@app.get("/robots.txt")
+def robots():
+    return Response(seo.robots_txt(), media_type="text/plain; charset=utf-8")
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    return Response(seo.sitemap_xml(), media_type="application/xml")
+
+
+@app.get("/llms.txt")
+def llms():
+    return Response(seo.llms_txt(), media_type="text/plain; charset=utf-8")
 
 
 # The website's pictures. "no-cache" makes browsers check for a newer copy each time (a quick
@@ -264,9 +285,23 @@ def demo(request: Request):
 def example_page(name: str):
     if name not in examples.EXAMPLES:
         return FileResponse(STATIC / "not_found.html", status_code=404)
-    if examples.load(name) is None:
+    saved = examples.load(name)
+    if saved is None:
         return FileResponse(STATIC / "coming_soon.html")
-    return FileResponse(STATIC / "example.html")
+    # The report is written into the page here, so search engines and AI assistants that don't run
+    # JavaScript can read it. The page's script then shows it fully formatted.
+    question = saved.get("question") or examples.EXAMPLES[name]
+    page = (STATIC / "example.html").read_text(encoding="utf-8")
+    for key, value in {
+        "TITLE": html.escape(f"{question} · Example report by Scout"),
+        "DESCRIPTION": html.escape(seo.plain_summary(saved.get("report", "")) or question),
+        "CANONICAL": html.escape(f"{seo.site()}/examples/{name}"),
+        "QUESTION": html.escape(question),
+        "REPORT": seo.report_html(saved.get("report", "")),
+        "JSON_LD": seo.report_json_ld(name, saved),
+    }.items():
+        page = page.replace("{{" + key + "}}", value)
+    return HTMLResponse(page)
 
 
 @app.get("/privacy")

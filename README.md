@@ -61,6 +61,21 @@ Visitors are told about the limits in plain words. When a limit is reached, the 
 
 **Privacy:** visitors are counted by a one-way code made from their internet address, the date and the secret salt. The code is wiped once its day is over, and raw addresses are never stored. Each visitor sees only their own questions. Questions and reports are deleted after 30 days. The details are at `/privacy`.
 
+## Search engines and AI assistants
+
+The site is set up to be found by search engines (Google, Bing) and read correctly by AI assistants (ChatGPT, Claude, Perplexity, Google's AI answers):
+
+- **`/robots.txt`** welcomes every search engine and AI assistant, by name, to everything except your admin pages, the demo's data and readers' personal download links.
+- **`/sitemap.xml`** lists the public pages, plus each example report once it's recorded.
+- **`/llms.txt`** is a plain summary of the site written for AI assistants: the key facts, the contents, the example reports and the questions below.
+- **The home page** carries structured data (facts about the book, you and the website that search engines read directly; it says the book is free) and a **Questions people ask** section.
+- **Example reports** are written into their page on the server, so tools that don't run scripts can read them, with their own title and description for search results.
+- Admin pages, download links and the demo's data are marked "don't index".
+
+**To change the questions and answers**, edit `scout/static/site/faq.md`: each question starts with `## ` and its answer follows. The home page, the structured data and `llms.txt` all update from it. Keep the answers short and true; AI assistants quote them.
+
+**To be found sooner**, add the site to [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing also feeds ChatGPT's search), and submit `https://buildingscout.info/sitemap.xml` in each. Both ask you to prove you own the domain, usually with a TXT record, which you can add in Railway's DNS settings for the domain.
+
 ## Signing in to your admin pages
 
 Your pages under `/admin` (recording the saved questions, the month's spend, your readers list) ask for `SCOUT_ADMIN_PASSWORD` on a sign-in page, which works in any browser, including those inside apps. You stay signed in on that device for 12 hours, or until you press **Sign out**. Changing the password in Railway signs everyone out. After 10 wrong passwords in 15 minutes, signing in pauses for 15 minutes, so nobody can keep guessing. Programs can still send the username `admin` and the password with each request.

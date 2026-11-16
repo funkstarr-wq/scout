@@ -36,7 +36,7 @@ def test_website_offers_the_free_book_and_links_to_linkedin():
     assert 'action="/book"' in page and 'id="free"' in page
     for field in ('name="first_name"', 'name="surname"', 'name="email"', 'name="email_ok"'):
         assert field in page
-    assert page.count(LINKEDIN) == 2  # about the author, and the footer
+    assert page.count(f'href="{LINKEDIN}"') == 2  # about the author, and the footer
     assert "Outfit" in page
 
 

@@ -1,9 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Example report · Scout</title>
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}">
+  <link rel="canonical" href="{{CANONICAL}}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Building Scout">
+  <meta property="og:title" content="{{QUESTION}}">
+  <meta property="og:description" content="{{DESCRIPTION}}">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta property="og:image" content="https://buildingscout.info/og-image.jpg?v=2">
+  <script type="application/ld+json">{{JSON_LD}}</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
   <style>
@@ -36,14 +45,17 @@
 <main>
   <p class="back"><a href="/">← About the book</a></p>
   <p class="eyebrow">Example report</p>
-  <h1 id="question">Loading the report…</h1>
+  <h1 id="question">{{QUESTION}}</h1>
   <p class="meta" id="meta"></p>
   <details open id="steps" hidden>
     <summary>How Scout worked on this</summary>
     <ol id="progress"></ol>
   </details>
-  <article id="report"></article>
-  <p class="cta"><a href="/demo">Ask Scout your own question →</a></p>
+  <article id="report">
+{{REPORT}}
+  </article>
+  <p class="cta"><a href="/demo">Watch Scout work through a question →</a></p>
+  <p class="meta">Scout is the AI research assistant you build in <a href="/">Building Scout</a>, a free plain-English guide to AI agents.</p>
 </main>
 
 <script>
@@ -68,13 +80,11 @@
       : `<pre style="white-space: pre-wrap; font: inherit">${escape(report)}</pre>`;  // if the library didn't load
   }
 
+  // The report is already on the page as plain text; this adds the steps and full formatting.
   fetch(`/api/examples/${encodeURIComponent(name)}`)
     .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
     .then(show)
-    .catch(() => {
-      $("question").textContent = "This example report isn't available right now.";
-      $("meta").textContent = "Please try again later, or ask Scout your own question.";
-    });
+    .catch(() => {});
 </script>
 </body>
 </html>

@@ -34,6 +34,10 @@
 <meta property="og:image:alt" content="The cover of Building Scout: three friendly robots on branching lines, on a clay background.">
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="A summary of this site for AI assistants">
+<!-- Facts about the book, its author and the questions below, for search engines (built by seo.py) -->
+<script type="application/ld+json">{{JSON_LD}}</script>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23da7757'/%3E%3Crect x='7' y='10' width='18' height='12' rx='5' fill='%232e5bd8' stroke='%23141414' stroke-width='2'/%3E%3Ccircle cx='13' cy='16' r='1.8' fill='%23fff'/%3E%3Ccircle cx='19' cy='16' r='1.8' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preload" href="fonts/outfit-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -280,6 +284,13 @@
   .part h3 { margin: 0.4rem 0 0.8rem; }
   .part h3 small { display: block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
   .part ol { margin: 0; padding-left: 1.8rem; }
+
+  /* Questions people ask (from faq.md) */
+  .faq { display: grid; gap: 1.1rem; margin-top: 2.2rem; }
+  @media (min-width: 48rem) { .faq { grid-template-columns: repeat(2, 1fr); } }
+  .faq-item { background: var(--card); border: 2px solid var(--line); border-radius: 22px; padding: 1.3rem 1.5rem; }
+  .faq-item h3 { margin: 0 0 0.5rem; font-size: 1.15rem; line-height: 1.3; }
+  .faq-item p { margin: 0; }
   .part li { margin-bottom: 0.3rem; line-height: 1.4; }
   .part li::marker { color: var(--muted); font-weight: 700; }
   .part-extra { display: flex; flex-direction: column; justify-content: center; background: var(--paper-alt); border-style: dashed; }
@@ -763,6 +774,18 @@
           <p>I'm a product leader in SaaS and digital communications, specialising in personalisation and optimisation. I've been coding for years, and I love &lsquo;vibe coding&rsquo;: describing what you want to an AI and building it together. I build small projects with Claude to explore what AI can do and how it can make everyday life better. <cite>Building Scout</cite> shares what I've learned, in plain English.</p>
           <a class="btn btn-white" href="https://www.linkedin.com/in/chris-haworth-98605b27/" rel="me">Connect with Chris on LinkedIn</a>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Questions people ask: the answers come from faq.md, so search engines and AI assistants
+       read exactly the same words as visitors. -->
+  <section class="band-alt" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <p class="kicker kicker-clay">Questions</p>
+      <h2 id="faq-title">Questions people ask</h2>
+      <div class="faq">
+{{FAQ_HTML}}
       </div>
     </div>
   </section>
