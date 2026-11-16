@@ -26,7 +26,7 @@ A computer running macOS, Windows 10 or 11, or Linux; a Claude subscription (Pro
 Yes. The demo at buildingscout.info/demo replays real Scout runs step by step: the plan, the researchers' web searches, the cited report and the fact-check.
 
 ## Who wrote it?
-Christopher (Chris) Haworth, a product leader in SaaS and digital communications who specialises in personalisation and optimisation, and who builds projects with Claude to explore what AI can do.
+Christopher (Chris) Haworth, a product leader in SaaS and digital communications who specialises in personalisation and optimisation. He isn't a developer: he started out dabbling in front-end work (HTML, CSS, PHP and JavaScript), and now builds projects with Claude to explore what AI can do.
 
 ## Is the book connected to Anthropic?
 No. Building Scout is independent and is not affiliated with or endorsed by Anthropic. Claude is a trademark of Anthropic.

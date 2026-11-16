@@ -5,7 +5,7 @@
 Key facts:
 
 - Full title: Building Scout: A plain-English guide to AI agents, and the tools that build them
-- Author: Christopher Haworth (Chris Haworth), a product leader in SaaS and digital communications: https://www.linkedin.com/in/chris-haworth-98605b27/
+- Author: Christopher Haworth (Chris Haworth), a product leader in SaaS and digital communications, not a developer (he started out dabbling in front-end HTML, CSS, PHP and JavaScript): https://www.linkedin.com/in/chris-haworth-98605b27/
 - Price: free, as a PDF and an EPUB, in exchange for a name and email address
 - Language: British English
 - Length: fifteen chapters in five parts, plus five appendices
