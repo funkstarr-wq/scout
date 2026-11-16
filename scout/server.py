@@ -77,6 +77,31 @@ async def site_rules(request: Request, call_next):
     return response
 
 
+class AnswerHeadRequests:
+    """Answer HEAD requests ("does this page exist, and what is it?") like GET, without the page itself.
+    Search engines, link checkers and preview tools send them; FastAPI alone would refuse them.
+    Private pages are left alone, so checking a download link never counts as a download."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope["method"] != "HEAD" or scope["path"].startswith(seo.PRIVATE_PATHS):
+            return await self.inner(scope, receive, send)
+
+        async def send_headers_only(message):
+            if message["type"] == "http.response.body":
+                if message.get("more_body", False):
+                    return  # skip the page's content...
+                message = {"type": "http.response.body", "body": b"", "more_body": False}  # ...and end cleanly
+            await send(message)
+
+        await self.inner({**scope, "method": "GET"}, receive, send_headers_only)
+
+
+app.add_middleware(AnswerHeadRequests)
+
+
 def require_password(credentials: HTTPBasicCredentials | None = Depends(basic)):
     """If SCOUT_PASSWORD is set, ask the browser for it (username: scout).
 
