@@ -4,6 +4,7 @@ Pages:
     /                  the book's website (always public)
     /book              the free-book form posts here; download links are /book/<token>/pdf or /epub
     /admin/signups.csv the list of readers who asked for the book (needs SCOUT_ADMIN_PASSWORD)
+    /admin/readers     everyone who asked for the free book: search, delete, download (needs SCOUT_ADMIN_PASSWORD)
     /admin/recordings  where the owner records the saved questions (needs SCOUT_ADMIN_PASSWORD)
     /admin/login       the owner signs in here, with SCOUT_ADMIN_PASSWORD
     /demo              the Scout page itself (password-protected unless DEMO_MODE is on)
@@ -360,7 +361,7 @@ def download_book(token: str, edition: str):
 # in-app browsers.) Programs can still send the username admin and the password with each request.
 ADMIN_COOKIE = "scout_admin"
 ADMIN_SIGN_IN_HOURS = 12
-ADMIN_PAGES = ("/admin/recordings", "/admin/spend", "/admin/signups.csv")
+ADMIN_PAGES = ("/admin/readers", "/admin/recordings", "/admin/spend", "/admin/signups.csv")
 WRONG_PASSWORD_LIMIT = 10    # this many wrong passwords...
 WRONG_PASSWORD_MINUTES = 15  # ...within this many minutes pauses signing in, so nobody can guess forever
 
@@ -452,14 +453,14 @@ def sign_in_page(next_page: str, message: str = "", status_code: int = 200) -> H
 
 @app.get("/admin")
 def admin_home():
-    return RedirectResponse("/admin/recordings", status_code=303)
+    return RedirectResponse("/admin/readers", status_code=303)
 
 
 @app.get("/admin/login")
 def admin_login_page(request: Request, next: str = ""):
     if not config.ADMIN_PASSWORD:
         raise HTTPException(404)
-    page = next if next in ADMIN_PAGES else "/admin/recordings"  # never send the owner anywhere else
+    page = next if next in ADMIN_PAGES else "/admin/readers"  # never send the owner anywhere else
     if signed_in(request):
         return RedirectResponse(page, status_code=303)
     return sign_in_page(page)
@@ -473,7 +474,7 @@ async def admin_sign_in(request: Request):
     if len(body) > LONGEST_FORM:
         raise HTTPException(413, "That form is too large.")
     form = {k: v[0] for k, v in parse_qs(body.decode("utf-8", "replace"), keep_blank_values=True).items()}
-    page = form.get("next", "") if form.get("next", "") in ADMIN_PAGES else "/admin/recordings"
+    page = form.get("next", "") if form.get("next", "") in ADMIN_PAGES else "/admin/readers"
     if wrong_passwords.paused():
         return sign_in_page(page, f"Too many wrong passwords. Please wait {WRONG_PASSWORD_MINUTES} minutes, then try again.", 429)
     if not is_admin_password(form.get("password", "")):
@@ -503,18 +504,114 @@ def demo_spend():
 
 
 @app.get("/admin/signups.csv", dependencies=[Depends(require_admin)])
-def signups_csv():
-    """The readers who asked for the book, as a spreadsheet. Username: admin."""
+def signups_csv(only: str = ""):
+    """The readers who asked for the book, as a spreadsheet. ?only=email_ok gives just the people
+    who are happy to get emails."""
     out = io.StringIO()
     sheet = csv.writer(out)
     sheet.writerow(["First name", "Surname", "Email", "Happy to get emails", "First asked", "Last asked", "Downloads"])
-    for row in store.list_signups():
+    readers = store.list_signups()
+    if only == "email_ok":
+        readers = [r for r in readers if r["email_ok"]]
+    for row in readers:
         sheet.writerow([spreadsheet_safe(row["first_name"]), spreadsheet_safe(row["surname"]),
                         spreadsheet_safe(row["email"]), "yes" if row["email_ok"] else "no",
                         row["created_at"], row["updated_at"], row["downloads"]])
+    name = "building-scout-readers-happy-to-get-emails.csv" if only == "email_ok" else "building-scout-readers.csv"
     return Response(out.getvalue(), media_type="text/csv; charset=utf-8",
-                    headers={"Content-Disposition": 'attachment; filename="building-scout-readers.csv"',
-                             "Cache-Control": "no-store"})
+                    headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
+
+
+# ---------------------------------------------------------------- readers
+READERS_SHOWN = 500  # the most a page lists at once; search finds the rest
+
+
+def readers_check() -> str:
+    """A code the delete buttons send back, so another website can't press them for you."""
+    return hmac.new(config.ADMIN_PASSWORD.encode(), b"delete a reader", hashlib.sha256).hexdigest()
+
+
+def when(stamp: str) -> str:
+    """2026-11-16T07:41:49+00:00 as 16 Nov 2026, 07:41 (UTC)."""
+    try:
+        return datetime.fromisoformat(stamp).strftime("%-d %b %Y, %H:%M")
+    except ValueError:
+        return stamp
+
+
+@app.get("/admin/readers", dependencies=[Depends(require_admin)])
+def readers_page(q: str = "", done: str = ""):
+    """Everyone who asked for the free book, newest first, with totals and a search box."""
+    everyone = store.list_signups()
+    week_ago = (store.utcnow() - timedelta(days=7)).isoformat(timespec="seconds")
+    totals = {
+        "READERS": len(everyone),
+        "HAPPY": sum(1 for r in everyone if r["email_ok"]),
+        "THIS_WEEK": sum(1 for r in everyone if r["created_at"] >= week_ago),
+        "DOWNLOADS": sum(r["downloads"] for r in everyone),
+    }
+    search = " ".join(q.split())[:100]
+    shown = list(reversed(everyone))
+    if search:
+        words = search.lower().split()
+        shown = [r for r in shown
+                 if all(w in f'{r["first_name"]} {r["surname"]} {r["email"]}'.lower() for w in words)]
+    more = len(shown) - READERS_SHOWN
+    rows = []
+    for r in shown[:READERS_SHOWN]:
+        # Readers typed these themselves, so everything is escaped and only ever shown as text.
+        name = html.escape(f'{r["first_name"]} {r["surname"]}')
+        email = html.escape(r["email"])
+        happy = '<span class="yes">Yes</span>' if r["email_ok"] else "No"
+        rows.append(
+            "<tr>"
+            f'<td data-label="Name">{name}</td>'
+            f'<td data-label="Email"><a href="mailto:{email}">{email}</a></td>'
+            f'<td data-label="Happy to get emails">{happy}</td>'
+            f'<td data-label="First asked">{html.escape(when(r["created_at"]))}</td>'
+            f'<td data-label="Last asked">{html.escape(when(r["updated_at"]))}</td>'
+            f'<td data-label="Downloads">{r["downloads"]}</td>'
+            f'<td><form method="post" action="/admin/readers/delete" class="delete" data-name="{name}">'
+            f'<input type="hidden" name="check" value="{readers_check()}">'
+            f'<input type="hidden" name="reader" value="{html.escape(r["email_key"])}">'
+            f'<button class="small" aria-label="Delete {name}">Delete</button></form></td>'
+            "</tr>"
+        )
+    if not everyone:
+        note = "Nobody has asked for the book yet. When someone fills in the form on the website, they'll appear here."
+    elif search and not shown:
+        note = "Nobody matches that search."
+    elif more > 0:
+        note = f"Showing the newest {READERS_SHOWN}. Search to find the other {more}, or download the spreadsheet."
+    else:
+        note = ""
+    message = {"deleted": "Deleted. That reader's details and download links are gone.",
+               "missing": "That reader had already been deleted."}.get(done, "")
+    page = (STATIC / "admin_readers.html").read_text(encoding="utf-8")
+    values = {k: f"{v:,}" for k, v in totals.items()}
+    values.update({
+        "SEARCH": html.escape(search),
+        "ROWS": "\n".join(rows),
+        "NOTE": html.escape(note),
+        "MESSAGE": html.escape(message),
+        "TABLE_HIDDEN": "" if rows else "hidden",
+    })
+    for key, value in values.items():
+        page = page.replace("{{" + key + "}}", value)  # every value above is built from escaped text
+    return HTMLResponse(page, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/admin/readers/delete", dependencies=[Depends(require_admin)])
+async def delete_reader(request: Request):
+    """Delete one reader, for example when they ask to have their details removed."""
+    body = await request.body()
+    if len(body) > LONGEST_FORM:
+        raise HTTPException(413, "That form is too large.")
+    form = {k: v[0] for k, v in parse_qs(body.decode("utf-8", "replace")).items()}
+    if not secrets.compare_digest(form.get("check", ""), readers_check()):
+        raise HTTPException(403, "Please go back to the readers page, reload it and try again.")
+    gone = store.delete_signup(form.get("reader", ""))
+    return RedirectResponse(f"/admin/readers?done={'deleted' if gone else 'missing'}", status_code=303)
 
 
 # ---------------------------------------------------------- saved questions

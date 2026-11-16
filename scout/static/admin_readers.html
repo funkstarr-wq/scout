@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Readers · Building Scout</title>
+  <style>
+    @font-face { font-family: "Outfit"; font-weight: 400; font-display: swap; src: url("/fonts/outfit-latin-400-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 500; font-display: swap; src: url("/fonts/outfit-latin-500-normal.woff2") format("woff2"); }
+    @font-face { font-family: "Outfit"; font-weight: 700; font-display: swap; src: url("/fonts/outfit-latin-700-normal.woff2") format("woff2"); }
+    :root { --clay: #da7757; --black: #141414; --paper: #fff8f1; --ink: #1e1c19; --muted: #59544b; --rule: #ddd3c1;
+            --accent: #1f3fa6; --ok: #1d6b3f; --ok-bg: #e3f5ea; --card: #fff; --tint: #fbebe0; }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper: #171412; --ink: #efe7d8; --muted: #b8b1a4; --rule: #3a342e; --accent: #a9b8ff;
+              --ok: #8fd6a9; --ok-bg: #173326; --card: #221e1b; --tint: #2a211c; }
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1.0625rem/1.6 "Outfit", system-ui, sans-serif; }
+    .band { background: var(--clay); color: var(--black); padding: 18px 16px; display: flex; flex-wrap: wrap;
+            align-items: center; justify-content: space-between; gap: 8px 20px; }
+    .band a { color: var(--black); font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+    .band strong { color: #1d3a9c; }
+    .band nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+    .band nav a { font-size: 0.95rem; font-weight: 500; text-decoration: underline; text-underline-offset: 0.18em; }
+    .band nav a[aria-current] { font-weight: 700; text-decoration-thickness: 2px; }
+    main { max-width: 1080px; margin: 0 auto; padding: 36px 16px 80px; }
+    h1 { font-size: 2rem; line-height: 1.2; color: var(--accent); margin: 0 0 8px; }
+    p { margin: 0 0 12px; }
+    a { color: var(--accent); }
+    .muted { color: var(--muted); }
+    .message { background: var(--ok-bg); color: var(--ok); border: 2px solid currentColor; border-radius: 12px; padding: 10px 14px; font-weight: 500; }
+    .message:empty, .note:empty { display: none; }
+
+    .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 24px 0; }
+    .total { background: var(--card); border: 2px solid var(--rule); border-radius: 14px; padding: 12px 16px; }
+    .total b { display: block; font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .total span { color: var(--muted); font-size: 0.92rem; }
+
+    .tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
+    .tools form { display: flex; gap: 8px; flex: 1 1 320px; max-width: 520px; }
+    input[type="search"] { flex: 1; min-width: 0; min-height: 44px; padding: 8px 14px; font: 1rem "Outfit", system-ui, sans-serif;
+                           color: var(--ink); background: var(--card); border: 2px solid var(--ink); border-radius: 999px; }
+    .downloads { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.95rem; }
+    button { font: 600 0.95rem "Outfit", system-ui, sans-serif; min-height: 44px; padding: 8px 18px; border-radius: 999px;
+             background: var(--black); color: #fff; border: 2px solid var(--black); cursor: pointer; }
+    @media (prefers-color-scheme: dark) { button { background: #efe7d8; color: #141414; border-color: #efe7d8; } }
+    button.small { min-height: 34px; padding: 4px 12px; font-size: 0.85rem; background: transparent; color: var(--ink); border-color: var(--rule); }
+    button.small:hover { border-color: var(--ink); }
+
+    table { width: 100%; border-collapse: collapse; background: var(--card); border: 2px solid var(--rule); border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: middle; font-size: 0.95rem; }
+    th { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); background: var(--tint); }
+    tr:last-child td { border-bottom: 0; }
+    td a { overflow-wrap: anywhere; }
+    .yes { color: var(--ok); font-weight: 700; }
+    /* On a phone, each reader becomes a small card. */
+    @media (max-width: 760px) {
+      table, thead, tbody, tr, td { display: block; }
+      thead { display: none; }
+      table { border: 0; background: none; }
+      tr { background: var(--card); border: 2px solid var(--rule); border-radius: 14px; margin-bottom: 10px; padding: 6px 0; }
+      td { border: 0; padding: 4px 14px; display: flex; gap: 10px; }
+      td[data-label]::before { content: attr(data-label); flex: 0 0 9.5rem; color: var(--muted); font-size: 0.85rem; }
+    }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  </style>
+</head>
+<body>
+<header class="band"><a href="/">Building <strong>Scout</strong></a>
+  <nav aria-label="Admin"><a href="/admin/readers" aria-current="page">Readers</a> <a href="/admin/recordings">Saved questions</a> <a href="/admin/logout">Sign out</a></nav></header>
+<main>
+  <h1>Readers</h1>
+  <p class="muted">Everyone who filled in the free-book form, newest first. Each person appears once: if they ask again,
+  their details are updated. Times are in UTC, which is UK time in winter. Only you can see this page.</p>
+  <p class="message" role="status">{{MESSAGE}}</p>
+
+  <div class="totals">
+    <div class="total"><b>{{READERS}}</b><span>readers</span></div>
+    <div class="total"><b>{{HAPPY}}</b><span>happy to get emails</span></div>
+    <div class="total"><b>{{THIS_WEEK}}</b><span>new in the last 7 days</span></div>
+    <div class="total"><b>{{DOWNLOADS}}</b><span>downloads</span></div>
+  </div>
+
+  <div class="tools">
+    <form method="get" action="/admin/readers" role="search">
+      <label class="muted" for="q" style="position:absolute;left:-9999px">Search readers</label>
+      <input type="search" id="q" name="q" value="{{SEARCH}}" placeholder="Search by name or email">
+      <button>Search</button>
+    </form>
+    <div class="downloads">
+      <a href="/admin/signups.csv">Download everyone (spreadsheet)</a>
+      <a href="/admin/signups.csv?only=email_ok">Download only people happy to get emails</a>
+    </div>
+  </div>
+
+  <p class="note muted">{{NOTE}}</p>
+  <table {{TABLE_HIDDEN}}>
+    <thead><tr><th>Name</th><th>Email</th><th>Happy to get emails</th><th>First asked</th><th>Last asked</th><th>Downloads</th><th><span style="position:absolute;left:-9999px">Delete</span></th></tr></thead>
+    <tbody>
+{{ROWS}}
+    </tbody>
+  </table>
+  <p class="muted" style="margin-top:16px">Only email people marked “Yes”. If someone asks you to delete their details,
+  press Delete next to their name: it removes them completely, and their download links stop working.</p>
+</main>
+<script>
+  // Ask before deleting. The name is read as plain text, never as code.
+  document.querySelectorAll("form.delete").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      if (!confirm(`Delete ${form.dataset.name} for good? This can't be undone.`)) event.preventDefault();
+    });
+  });
+</script>
+</body>
+</html>
