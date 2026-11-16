@@ -282,6 +282,17 @@ def site_verification(name: str):
     return FileResponse(SITE / filename, media_type="text/html; charset=utf-8")
 
 
+GTM_ID = re.compile(r"GTM-[A-Z0-9]{4,12}")
+
+
+@app.get("/site-consent.js")
+def site_consent():
+    """The cookie banner and, once a visitor accepts, Google Tag Manager (see static/site/consent.js)."""
+    gtm_id = config.GTM_ID if GTM_ID.fullmatch(config.GTM_ID) else ""  # anything odd switches it off
+    script = (SITE / "consent.js").read_text(encoding="utf-8").replace("{{GTM_ID}}", gtm_id)
+    return Response(script, media_type="text/javascript; charset=utf-8", headers={"Cache-Control": "no-cache"})
+
+
 @app.get("/robots.txt")
 def robots():
     return Response(seo.robots_txt(), media_type="text/plain; charset=utf-8")

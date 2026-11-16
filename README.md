@@ -76,6 +76,17 @@ The site is set up to be found by search engines (Google, Bing) and read correct
 
 **To be found sooner**, add the site to [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing also feeds ChatGPT's search), and submit `https://buildingscout.info/sitemap.xml` in each. Both ask you to prove you own the domain. Google's "HTML file" method is set up: the file it gave you is `scout/static/site/google0bea272a8c90e707.html`, served at `https://buildingscout.info/google0bea272a8c90e707.html`. For another search engine's file, put it in the same folder (Google-style `google….html` files are served automatically), or use its TXT-record method in Railway's DNS settings for the domain.
 
+## Google Analytics and the cookie banner
+
+The public pages (home, demo, privacy and example reports) load Google Tag Manager, container `GTM-NXRH3PSG`, which is where you set up Google Analytics. UK law (PECR and UK GDPR) needs a visitor's agreement first, so:
+
+- The first time someone visits, a small banner asks **"Can we count your visit?"** with **Accept** and **No thanks**, equally easy to press.
+- **Nothing from Google loads until they press Accept.** Their choice is remembered on their device. Accept allows analytics only, never advertising; "No thanks" also removes any Google Analytics cookies.
+- The privacy page explains this and has a **Change your cookie choice** button.
+- The free-book pages (which show readers' names and download links) and your admin pages never load it.
+
+In Tag Manager, add a **Google Analytics: GA4 Configuration** (or **Google tag**) with your GA4 measurement ID, triggered on **All Pages**, then publish. To use a different container, set `SCOUT_GTM_ID` in Railway; set it to nothing to switch Tag Manager off.
+
 ## Signing in to your admin pages
 
 Your pages under `/admin` (recording the saved questions, the month's spend, your readers list) ask for `SCOUT_ADMIN_PASSWORD` on a sign-in page, which works in any browser, including those inside apps. You stay signed in on that device for 12 hours, or until you press **Sign out**. Changing the password in Railway signs everyone out. After 10 wrong passwords in 15 minutes, signing in pauses for 15 minutes, so nobody can keep guessing. Programs can still send the username `admin` and the password with each request.
