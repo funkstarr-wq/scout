@@ -58,6 +58,9 @@ LIVE_QUESTIONS = _switch("SCOUT_LIVE_QUESTIONS") if DEMO_MODE else True
 
 # The website's public address, used in its site map, its structured data and llms.txt.
 SITE_URL = os.getenv("SCOUT_SITE_URL") or "https://buildingscout.info"
+# Google Tag Manager, loaded on the public pages only after a visitor accepts cookies.
+# Set SCOUT_GTM_ID to an empty value to switch it off.
+GTM_ID = os.getenv("SCOUT_GTM_ID", "GTM-NXRH3PSG").strip()
 
 # The lead model plans, writes and reviews. The worker model does the searching.
 # The live demo uses the cheaper Haiku for both, because every question costs the owner money:

@@ -7,6 +7,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/site-consent.js" defer></script>
   <title>Privacy · Building Scout</title>
   <meta name="description" content="What the Building Scout website and its demo store, why, and how to have your details deleted.">
   <link rel="canonical" href="https://buildingscout.info/privacy">
@@ -28,14 +29,16 @@
     h2 { font-size: 21px; margin: 32px 0 8px; }
     .lede { color: var(--muted); margin: 0 0 8px; }
     :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    button[data-cookie-choice] { font: 600 16px "Outfit", system-ui, sans-serif; min-height: 44px; padding: 8px 18px;
+      border-radius: 999px; border: 2px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
   </style>
 </head>
 <body>
 <main>
   <p class="back"><a href="/">← About the book</a></p>
   <h1>Privacy</h1>
-  <p class="lede">This page explains what this website stores, why, and for how long. Only two things store anything:
-  asking for the free book, and using the live demo of Scout. The rest of the site stores nothing about you.</p>
+  <p class="lede">This page explains what this website stores, why, and for how long. Only three things store anything:
+  asking for the free book, using the live demo of Scout, and Google Analytics, but only if you agree to it.</p>
 
   <h2>If you ask for the free book</h2>
   <ul>
@@ -48,16 +51,23 @@
   deleted. They are only seen by the author, and are never shared or sold.</p>
 
   <h2>What the live demo stores</h2>
-  <p>Watching a saved question stores nothing about you and sets no cookie. When the demo lets you ask your own
+  <p>Watching a saved question stores nothing about you, and the demo itself sets no cookie. When the demo lets you ask your own
   question, it stores:</p>
   <ul>
     <li><strong>Your question and Scout's report</strong>, so you can read the report and see it in your history.</li>
     <li><strong>A one-way code made from your internet address, today's date and a secret key.</strong> It is used
       only to count how many questions each visitor asks per day. Only someone with the secret key could work out
       which address made it, and it is wiped once the day is over. Your internet address itself is never stored.</li>
-    <li><strong>One cookie</strong> holding a random ID, so the demo can show you your own questions and nobody else's.
-      There are no other cookies, no analytics and no tracking.</li>
+    <li><strong>One cookie</strong> holding a random ID, so the demo can show you your own questions and nobody else's.</li>
   </ul>
+
+  <h2 id="cookies">Cookies and Google Analytics</h2>
+  <p>The first time you visit, the site asks whether it can count your visit. <strong>Nothing from Google loads
+  unless you press Accept.</strong> If you do, Google Tag Manager loads Google Analytics, which sets cookies (their
+  names start with <code>_ga</code>) to count visits and see which pages people read, and sends that to Google.
+  It isn't used for advertising. Your choice is remembered on your device. The pages for the free book and the
+  owner's pages never load it.</p>
+  <p><button type="button" data-cookie-choice>Change your cookie choice</button></p>
 
   <h2>Who can see your questions</h2>
   <p>Only you can see your questions and reports on the demo. The author, who runs the demo, can see the
@@ -66,7 +76,7 @@
   <h2>Who else is involved</h2>
   <p>To answer your question, Scout sends it to Anthropic's Claude API, and Scout's researchers search the web.
   The demo is hosted on Railway, which keeps standard access logs, including internet addresses,
-  as almost all web hosts do.</p>
+  as almost all web hosts do. If you accept cookies, Google receives the analytics described above.</p>
 
   <h2>How long the demo keeps things</h2>
   <p>Questions and reports are deleted automatically after 30 days. The daily codes are wiped the day after
