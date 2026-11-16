@@ -150,3 +150,17 @@ def test_what_you_need_links_to_each_setup_step():
 def test_no_unfilled_placeholders_on_public_pages(path):
     import re
     assert not re.search(r"\{\{[A-Z_]+\}\}", client.get(path).text), path
+
+
+def test_the_site_calls_itself_buildingscout_info():
+    page = client.get("/").text
+    assert '<link rel="canonical" href="https://buildingscout.info/">' in page
+    assert 'content="https://buildingscout.info/og-image.jpg' in page
+    assert "up.railway.app" not in page
+
+
+def test_www_forwards_to_the_plain_address():
+    response = client.get("/demo?x=1", headers={"host": "www.buildingscout.info"}, follow_redirects=False)
+    assert response.status_code == 301
+    assert response.headers["location"] == "https://buildingscout.info/demo?x=1"
+    assert client.get("/", headers={"host": "buildingscout.info"}).status_code == 200
