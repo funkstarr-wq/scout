@@ -74,7 +74,7 @@ The site is set up to be found by search engines (Google, Bing) and read correct
 
 **To change the questions and answers**, edit `scout/static/site/faq.md`: each question starts with `## ` and its answer follows. The home page, the structured data and `llms.txt` all update from it. Keep the answers short and true; AI assistants quote them.
 
-**To be found sooner**, add the site to [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing also feeds ChatGPT's search), and submit `https://buildingscout.info/sitemap.xml` in each. Both ask you to prove you own the domain, usually with a TXT record, which you can add in Railway's DNS settings for the domain.
+**To be found sooner**, add the site to [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing also feeds ChatGPT's search), and submit `https://buildingscout.info/sitemap.xml` in each. Both ask you to prove you own the domain. Google's "HTML file" method is set up: the file it gave you is `scout/static/site/google0bea272a8c90e707.html`, served at `https://buildingscout.info/google0bea272a8c90e707.html`. For another search engine's file, put it in the same folder (Google-style `google….html` files are served automatically), or use its TXT-record method in Railway's DNS settings for the domain.
 
 ## Signing in to your admin pages
 
