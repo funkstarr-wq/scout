@@ -244,6 +244,19 @@ def home():
     return HTMLResponse(page)
 
 
+# Search engines' "prove you own this site" files, such as Google Search Console's
+# google<code>.html. Put the file Google gives you in scout/static/site/ and it's served here.
+VERIFY_FILE = re.compile(r"google[0-9a-f]{8,32}\.html")
+
+
+@app.get("/{name}.html")
+def site_verification(name: str):
+    filename = f"{name}.html"
+    if not VERIFY_FILE.fullmatch(filename) or not (SITE / filename).is_file():
+        return FileResponse(STATIC / "not_found.html", status_code=404)
+    return FileResponse(SITE / filename, media_type="text/html; charset=utf-8")
+
+
 @app.get("/robots.txt")
 def robots():
     return Response(seo.robots_txt(), media_type="text/plain; charset=utf-8")

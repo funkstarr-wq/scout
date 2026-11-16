@@ -163,3 +163,15 @@ def test_example_reports_are_written_into_the_page_for_tools_that_skip_javascrip
     assert data["@type"] == "Report" and data["datePublished"] == "2026-11-16T09:00:00+00:00"
     assert data["citation"] == ["https://example.org/one"]
     assert "{{" not in page
+
+
+# ----------------------------------------------------- proving who owns the site
+def test_google_search_console_can_find_its_verification_file():
+    response = client.get("/google0bea272a8c90e707.html")
+    assert response.status_code == 200
+    assert response.text == "google-site-verification: google0bea272a8c90e707.html"
+
+
+@pytest.mark.parametrize("path", ["/google0000000000000000.html", "/index.html", "/googlexyz.html", "/faq.html"])
+def test_only_real_verification_files_are_served(path):
+    assert client.get(path).status_code == 404
