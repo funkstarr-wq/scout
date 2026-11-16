@@ -175,3 +175,26 @@ def test_google_search_console_can_find_its_verification_file():
 @pytest.mark.parametrize("path", ["/google0000000000000000.html", "/index.html", "/googlexyz.html", "/faq.html"])
 def test_only_real_verification_files_are_served(path):
     assert client.get(path).status_code == 404
+
+
+# ------------------------------------------------------------- HEAD requests
+@pytest.mark.parametrize("path, kind", [("/", "text/html"), ("/sitemap.xml", "application/xml"),
+                                        ("/robots.txt", "text/plain"), ("/llms.txt", "text/plain"),
+                                        ("/google0bea272a8c90e707.html", "text/html"), ("/demo", "text/html")])
+def test_head_requests_are_answered_like_get_without_the_page(path, kind):
+    response = client.head(path)
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith(kind)
+    assert response.content == b""
+    assert int(response.headers["content-length"]) == len(client.get(path).content)
+
+
+def test_head_still_redirects_www_and_finds_missing_pages():
+    assert client.head("/sitemap.xml", headers={"host": "www.buildingscout.info"}, follow_redirects=False).status_code == 301
+    assert client.head("/no-such-page.html").status_code == 404
+
+
+def test_checking_a_download_link_does_not_count_as_a_download():
+    token = store.save_signup("Ada", "Lovelace", "ada@example.org", email_ok=False)
+    assert client.head(f"/book/{token}/pdf").status_code != 200
+    assert store.find_signup(token)["downloads"] == 0
