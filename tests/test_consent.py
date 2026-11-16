@@ -15,7 +15,7 @@ def test_the_banner_script_carries_the_container_id_and_starts_with_everything_d
     response = client.get("/site-consent.js")
     assert response.status_code == 200 and response.headers["content-type"].startswith("text/javascript")
     script = response.text
-    assert 'const GTM_ID = "GTM-NXRH3PSG";' in script
+    assert 'const GTM_ID = "GTM-PNRC4M8Q";' in script
     denied = script.index('gtag("consent", "default"')
     loader = script.index("googletagmanager.com/gtm.js")
     assert denied < loader  # consent is set to "denied" before anything could load

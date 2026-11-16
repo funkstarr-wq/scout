@@ -78,7 +78,7 @@ The site is set up to be found by search engines (Google, Bing) and read correct
 
 ## Google Analytics and the cookie banner
 
-The public pages (home, demo, privacy and example reports) load Google Tag Manager, container `GTM-NXRH3PSG`, which is where you set up Google Analytics. UK law (PECR and UK GDPR) needs a visitor's agreement first, so:
+The public pages (home, demo, privacy and example reports) load Google Tag Manager, container `GTM-PNRC4M8Q`, which is where you set up Google Analytics. UK law (PECR and UK GDPR) needs a visitor's agreement first, so:
 
 - The first time someone visits, a small banner asks **"Can we count your visit?"** with **Accept** and **No thanks**, equally easy to press.
 - **Nothing from Google loads until they press Accept.** Their choice is remembered on their device. Accept allows analytics only, never advertising; "No thanks" also removes any Google Analytics cookies.
