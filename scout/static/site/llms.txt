@@ -1,0 +1,62 @@
+# Building Scout
+
+> Building Scout is a free book by Christopher Haworth: a plain-English guide to AI agents, and the tools that build them. Readers with no coding experience use Claude Code to build Scout, a working AI research assistant made of a team of AI agents, and put it live on the internet. The book is free to download as a PDF and an EPUB from {{SITE}}/.
+
+Key facts:
+
+- Full title: Building Scout: A plain-English guide to AI agents, and the tools that build them
+- Author: Christopher Haworth (Chris Haworth), a product leader in SaaS and digital communications, not a developer (he started out dabbling in front-end HTML, CSS, PHP and JavaScript): https://www.linkedin.com/in/chris-haworth-98605b27/
+- Price: free, as a PDF and an EPUB, in exchange for a name and email address
+- Language: British English
+- Length: fifteen chapters in five parts, plus five appendices
+- Audience: complete beginners, and people who keep hearing about "agents" and "MCP" at work and want to understand them by building something real
+- Topics: AI agents, Claude Code, prompts, tools, hooks, subagents, skills, MCP (the Model Context Protocol), LangGraph, long-running harnesses and autoresearch
+- What you build: Scout, an AI research assistant. A planner agent splits a question into tasks, researcher agents search the web in parallel, a writer produces a Markdown report in which every claim cites its source, and a fact-checker reviews it. Built with Python, FastAPI, LangGraph and the Claude API.
+- Independent: not affiliated with or endorsed by Anthropic. Claude is a trademark of Anthropic.
+
+## The book
+
+- [Get the book free]({{SITE}}/#free): download the PDF and EPUB
+- [What's inside]({{SITE}}/#inside): the fifteen chapters, listed below
+- [About the author]({{SITE}}/#author): Christopher Haworth
+
+## Contents
+
+Part One: Foundations
+1. What an agent actually is
+2. Setting up your workshop
+3. Talking to Claude well
+
+Part Two: Working with Claude Code
+4. Building with Claude Code
+5. Giving Claude a memory
+6. Checks that can say no
+
+Part Three: Building the agent
+7. Writing tools for agents
+8. A team of researchers
+9. Drawing the map
+
+Part Four: Scaling your workshop
+10. Helpers with their own desks
+11. Teaching Claude your recipes
+12. Plugging into the world
+
+Part Five: Running on its own
+13. Work that outlasts a conversation
+14. The agent in a loop
+15. Shipping Scout
+
+Appendices: answers to the tests, a glossary, what to do when things go wrong, Scout's complete source code, and sources and further reading.
+
+## See Scout working
+
+- [Demo]({{SITE}}/demo): watch Scout work through real questions step by step, with the plan, the web searches, the cited report and the fact-check
+{{EXAMPLES}}
+## Questions people ask
+
+{{FAQ}}
+
+## Optional
+
+- [Privacy]({{SITE}}/privacy): what the website and the demo store

@@ -24,6 +24,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - `book/` the free book: the PDF and EPUB readers download, plus the EPUB filter and styles; `Building-Scout.docx` is the manuscript
 - `scout/static/book_ready.html`, `book_problem.html` the pages after the free-book form; sign-ups are in `store.py`
 - `scout/static/fonts/` Outfit, the cover's typeface (SIL Open Font Licence); every page uses it
+- `scout/seo.py` search engines and AI assistants: `/robots.txt`, `/sitemap.xml`, `/llms.txt`, the home page's structured data, and example reports written into their page; the FAQ is `scout/static/site/faq.md` and the AI summary is `scout/static/site/llms.txt`
 - `scout/store.py` SQLite storage; `scout/mcp_server.py` Scout as an MCP tool
 - `scout/spend.py` prices every Claude reply so the demo stops at `SCOUT_MONTHLY_BUDGET_USD`; `/admin/spend` shows the month's total
 - `tests/` uses a fake Claude (`scout/fake_llm.py`), so tests never need an API key; `SCOUT_FAKE=1` uses it in the app

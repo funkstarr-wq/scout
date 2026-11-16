@@ -56,6 +56,9 @@ FAKE_MODE = _switch("SCOUT_FAKE")
 # Your own copy (DEMO_MODE off) always takes questions.
 LIVE_QUESTIONS = _switch("SCOUT_LIVE_QUESTIONS") if DEMO_MODE else True
 
+# The website's public address, used in its site map, its structured data and llms.txt.
+SITE_URL = os.getenv("SCOUT_SITE_URL") or "https://buildingscout.info"
+
 # The lead model plans, writes and reviews. The worker model does the searching.
 # The live demo uses the cheaper Haiku for both, because every question costs the owner money:
 # per word, Haiku costs about a twentieth of Sonnet.
