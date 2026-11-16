@@ -43,9 +43,9 @@ def test_the_right_password_signs_you_in_to_every_admin_page(browser):
     assert response.status_code == 303 and response.headers["location"] == "/admin/recordings"
     cookie = response.headers["set-cookie"]
     assert "HttpOnly" in cookie and "Path=/admin" in cookie and "SameSite=lax" in cookie
-    for page in ("/admin/recordings", "/admin/spend", "/admin/signups.csv", "/admin/login"):
+    for page in ("/admin/readers", "/admin/recordings", "/admin/spend", "/admin/signups.csv", "/admin/login"):
         assert browser.get(page).status_code == 200
-    assert browser.get("/admin/login", follow_redirects=False).headers["location"] == "/admin/recordings"
+    assert browser.get("/admin/login", follow_redirects=False).headers["location"] == "/admin/readers"
 
 
 def test_the_cookie_is_https_only_on_the_live_site(browser):
@@ -62,7 +62,7 @@ def test_a_wrong_password_says_so_and_lets_nobody_in(browser):
 
 def test_the_page_after_signing_in_can_only_be_an_admin_page(browser):
     for sneaky in ("https://evil.example", "//evil.example", "/demo", "/admin/../demo"):
-        assert sign_in(browser, next_page=sneaky).headers["location"] == "/admin/recordings"
+        assert sign_in(browser, next_page=sneaky).headers["location"] == "/admin/readers"
     assert sign_in(browser, next_page="/admin/spend").headers["location"] == "/admin/spend"
 
 

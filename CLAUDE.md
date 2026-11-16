@@ -19,7 +19,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - `scout/prompts/*.md` every prompt Scout uses, as plain text
 - `scout/server.py` web server: the website at `/`, Scout at `/demo`, example reports, privacy note, live demo limits
 - `scout/static/index.html` the Scout page (served at /demo); `scout/static/site/` the book's website
-- `scout/static/example.html`, `privacy.html`, `coming_soon.html`, `not_found.html`, `admin_recordings.html` the other pages
+- `scout/static/example.html`, `privacy.html`, `coming_soon.html`, `not_found.html` the other pages; `admin_login.html`, `admin_readers.html`, `admin_recordings.html` the owner's signed-in pages
 - `scout/examples.py` the saved questions: real runs, recorded once, that the demo replays for free and the website shows as example reports; record them at `/admin/recordings` (costs money) or with `scripts/make_examples.py`
 - `book/` the free book: the PDF and EPUB readers download, plus the EPUB filter and styles; `Building-Scout.docx` is the manuscript
 - `scout/static/book_ready.html`, `book_problem.html` the pages after the free-book form; sign-ups are in `store.py`
@@ -35,7 +35,7 @@ Markdown report, and a reviewer checks it. Built with Python, FastAPI, LangGraph
 - Never edit `evals/questions.jsonl` or `evals/run_eval.py`; they are the referee.
 - Never run anything that calls the real API (the evaluation, `scripts/make_examples.py`) unless the owner asks.
 - The live demo spends the owner's money: never weaken a demo limit without asking.
-- Readers' names and emails (the `signups` table) are personal data: never print, log or export them except through `/admin/signups.csv`.
+- Readers' names and emails (the `signups` table) are personal data: never print, log or export them except through the signed-in admin pages (`/admin/readers` and `/admin/signups.csv`).
 - Every new feature needs a test in `tests/` that uses the fake client, not the real API.
 - Keep prompts in `scout/prompts/`, not inside Python code.
 - Explain changes in plain English: the owner of this project is not a programmer.

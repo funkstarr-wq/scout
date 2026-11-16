@@ -226,12 +226,20 @@ def count_download(token: str) -> None:
 
 
 def list_signups() -> list[dict]:
+    """Every reader, oldest first."""
     with _connect() as conn:
         rows = conn.execute(
-            "SELECT first_name, surname, email, email_ok, created_at, updated_at, downloads "
+            "SELECT email_key, first_name, surname, email, email_ok, created_at, updated_at, downloads "
             "FROM signups ORDER BY created_at"
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+def delete_signup(email_key: str) -> bool:
+    """Forget a reader completely, for example when they ask to have their details deleted.
+    Their download links stop working too. Returns whether there was anyone to delete."""
+    with _connect() as conn:
+        return conn.execute("DELETE FROM signups WHERE email_key = ?", (email_key,)).rowcount > 0
 
 
 # ------------------------------------------------------- what the demo spends

@@ -10,6 +10,7 @@ This project also holds the book's website and a public **live demo** of Scout. 
 | `/examples/<name>` | The saved questions' finished reports, which never call Claude |
 | `/privacy` | What the website and the live demo store |
 | `/book` | The free-book form sends readers here, and they get their PDF and EPUB download links |
+| `/admin/readers` | Everyone who asked for the free book: totals, search, delete, spreadsheet downloads |
 | `/admin/recordings` | Where you record the saved questions. Any `/admin` page first asks you to sign in with `SCOUT_ADMIN_PASSWORD` |
 
 ## Run it on your computer
@@ -85,7 +86,7 @@ python scripts/make_examples.py
 
 The website's **Get the book free** form asks for a first name, surname and email address, plus an optional "email me now and then" box. A reader who fills it in gets download links for the PDF and the EPUB. The links work for 7 days, and asking again gives a fresh pair. Each reader is stored once, by email address, with whether they're happy to get emails and how many times they've downloaded.
 
-**To get your list of readers**, set `SCOUT_ADMIN_PASSWORD` (see the Railway table below) and open `https://<your site>/admin/signups.csv`. Sign in with that password. It downloads as a spreadsheet. (The recordings page also has a link to it.) Only email the people marked "yes".
+**To see your readers**, set `SCOUT_ADMIN_PASSWORD` (see the Railway table below), open `https://<your site>/admin` and sign in. The **Readers** page lists everyone who filled in the form, newest first. It shows totals (readers, how many are happy to get emails, new this week, downloads) and has a search box. It also has two spreadsheet downloads: everyone, or only the people happy to get emails. Only email the people marked "Yes". If someone asks you to delete their details, press **Delete** next to their name: it removes them completely, and their download links stop working. Everything is kept in the database on the Railway volume (`SCOUT_DB`), so it survives redeploys.
 
 **When the manuscript changes**, rebuild both editions. It's free and doesn't call Claude. The PDF keeps your Word design exactly (cover, title page, contents, running heads): LibreOffice prints it as laid out. The EPUB is made with pandoc. One-off setup: install LibreOffice from https://www.libreoffice.org (on a Mac, `brew install --cask libreoffice` also works), then:
 ```bash
